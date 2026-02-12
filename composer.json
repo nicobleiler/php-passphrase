@@ -1,5 +1,5 @@
 {
-    "name": "nicobleil/php-passphrase",
+    "name": "nicobleiler/php-passphrase",
     "description": "Passphrase generator with Laravel integration, inspired by Bitwarden. Uses the EFF long word list by default with support for custom wordlists.",
     "type": "library",
     "license": "MIT",
