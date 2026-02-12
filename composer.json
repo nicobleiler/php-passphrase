@@ -1,0 +1,52 @@
+{
+    "name": "nicobleil/php-passphrase",
+    "description": "Passphrase generator with Laravel integration, inspired by Bitwarden. Uses the EFF long word list by default with support for custom wordlists.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "passphrase",
+        "password",
+        "generator",
+        "eff",
+        "bitwarden",
+        "laravel",
+        "security"
+    ],
+    "authors": [
+        {
+            "name": "Nico Bleiler"
+        }
+    ],
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "NicoBleiler\\Passphrase\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NicoBleiler\\Passphrase\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "NicoBleiler\\Passphrase\\PassphraseServiceProvider"
+            ],
+            "aliases": {
+                "Passphrase": "NicoBleiler\\Passphrase\\Facades\\Passphrase"
+            }
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
