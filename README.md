@@ -73,7 +73,7 @@ echo $generator->generate(); // "candle-rubber-glimpse"
 | `capitalize` | `bool` | `false` | Capitalize the first letter of each word |
 | `includeNumber` | `bool` | `false` | Append a random digit (0–9) to one random word |
 
-These match [Bitwarden's passphrase generator options](https://bitwarden.com/password-generator/) exactly.
+These match [Bitwarden's passphrase generator options](https://bitwarden.com/passphrase-generator/) exactly.
 
 ## Configuration
 
