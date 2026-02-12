@@ -7,7 +7,7 @@ Generates secure, memorable passphrases using the [EFF long word list](https://w
 ## Installation
 
 ```bash
-composer require nicobleil/php-passphrase
+composer require nicobleiler/php-passphrase
 ```
 
 Laravel will auto-discover the service provider. For other frameworks, see [Standalone Usage](#standalone-usage).
