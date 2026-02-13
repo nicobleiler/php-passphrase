@@ -12,8 +12,13 @@ permissions:
     contents: read # for checkout
 
 jobs:
+    test:
+        uses: ./.github/workflows/test.yml
+    benchmark:
+        uses: ./.github/workflows/benchmark.yml
     release:
         name: Release
+        needs: test
         runs-on: ubuntu-latest
         permissions:
             contents: write # to be able to publish a GitHub release
