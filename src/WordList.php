@@ -61,14 +61,15 @@ class WordList
         }
 
         $words = [];
+        $isDiceWareFormat = preg_match('/^\d+\s+.+$/', $lines[0]) === 1;
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '') {
                 continue;
             }
 
-            // Support EFF format (e.g. "11111\tabacus") or plain word per line
-            if (preg_match('/^\d+\s+(.+)$/', $line, $matches)) {
+            // Support Dice Ware style or plain word per line
+            if ($isDiceWareFormat && preg_match('/^\d+\s+(.+)$/', $line, $matches)) {
                 $words[] = $matches[1];
             } else {
                 $words[] = $line;
