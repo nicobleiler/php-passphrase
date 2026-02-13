@@ -34,5 +34,5 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Run tests
+      - name: Run benchmark
         run: composer bench
