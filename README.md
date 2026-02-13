@@ -157,6 +157,62 @@ The test suite includes tests modeled after Bitwarden's own test cases:
 - EFF word list integrity
 - Laravel integration (service provider, facade, config)
 
+## Benchmarking
+
+Run the built-in benchmark harness:
+
+```bash
+composer bench
+```
+
+JSON output (useful for CI, plotting, or ad-hoc analysis):
+
+```bash
+composer bench:json
+```
+
+You can tune benchmark settings:
+
+```bash
+php benchmarks/run.php --iterations=10000 --warmup=500
+```
+
+The default benchmark is the official comparison set and uses normalized entropy targets ($\approx 64$-$65$ bits) for fair comparison across implementations.
+
+Pinned competitor packages (dev dependencies) used by the official benchmark:
+
+```bash
+composer require --dev genphrase/genphrase
+composer require --dev martbock/laravel-diceware
+```
+
+Official providers:
+
+- `php-passphrase` with EFF 5 words (~64.6 bits)
+- `genphrase/genphrase` with a 65-bit target on diceware mode
+- `martbock/laravel-diceware` with EFF 5 words (~64.6 bits)
+- `random_bytes(8)` (~64 bits)
+- `Illuminate\\Support\\Str::random(11)` (~65.5 bits)
+
+The benchmark fails fast if any official provider is missing.
+
+The CLI output also includes category winners in two sections:
+
+- all providers (including non-passphrase baselines)
+- passphrase libraries only
+
+Each section reports:
+
+- best average speed
+- lowest memory consumption (retained memory delta, tie-break by peak delta)
+- fastest cold start
+
+You can benchmark a subset using repeated `--provider` flags:
+
+```bash
+php benchmarks/run.php --provider="php-passphrase (EFF 5 words, ~64.6 bits)" --provider="genphrase/genphrase (65-bit target, diceware)"
+```
+
 ## Requirements
 
 - PHP 8.2+

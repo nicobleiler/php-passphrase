@@ -22,7 +22,9 @@
     },
     "require-dev": {
         "orchestra/testbench": "^9.0",
-        "phpunit/phpunit": "^11.0"
+        "phpunit/phpunit": "^11.0",
+        "genphrase/genphrase": "^1.2",
+        "martbock/laravel-diceware": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -45,7 +47,9 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "bench": "php benchmarks/run.php",
+        "bench:json": "php benchmarks/run.php --json"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
