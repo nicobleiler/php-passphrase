@@ -28,6 +28,14 @@ class WordListTest extends TestCase
         $this->assertSame('zoom', $wordList->wordAt($wordList->count() - 1));
     }
 
+    public function test_eff_word_list_is_cached_between_calls(): void
+    {
+        $first = WordList::eff();
+        $second = WordList::eff();
+
+        $this->assertSame($first, $second);
+    }
+
     public function test_from_array(): void
     {
         $words = ['alpha', 'bravo', 'charlie'];

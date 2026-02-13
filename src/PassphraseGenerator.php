@@ -86,9 +86,11 @@ class PassphraseGenerator
      */
     private function generateWords(int $numWords): array
     {
+        $wordCount = $this->wordList->count();
         $words = [];
         for ($i = 0; $i < $numWords; $i++) {
-            $words[] = $this->wordList->randomWord();
+            $index = random_int(0, $wordCount - 1);
+            $words[] = $this->wordList->wordAt($index);
         }
 
         return $words;

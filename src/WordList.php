@@ -11,6 +11,8 @@ class WordList
     /** @var string[] */
     private array $words;
 
+    private ?int $wordCount = null;
+
     /**
      * @param string[] $words
      */
@@ -24,7 +26,15 @@ class WordList
      */
     public static function eff(): self
     {
-        return self::fromFile(self::effWordListPath());
+        static $cachedEff = null;
+
+        if ($cachedEff instanceof self) {
+            return $cachedEff;
+        }
+
+        $cachedEff = self::fromFile(self::effWordListPath());
+
+        return $cachedEff;
     }
 
     /**
@@ -91,7 +101,7 @@ class WordList
      */
     public function randomWord(): string
     {
-        return $this->words[random_int(0, count($this->words) - 1)];
+        return $this->words[random_int(0, $this->count() - 1)];
     }
 
     /**
@@ -107,7 +117,13 @@ class WordList
      */
     public function count(): int
     {
-        return count($this->words);
+        if ($this->wordCount !== null) {
+            return $this->wordCount;
+        }
+
+        $this->wordCount = count($this->words);
+
+        return $this->wordCount;
     }
 
     /**
