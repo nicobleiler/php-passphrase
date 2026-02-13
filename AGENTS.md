@@ -70,6 +70,12 @@ When changing behavior or public options:
 - Update `README.md` and `AGENTS.md` examples/options.
 - Ensure configuration docs stay aligned with `config/passphrase.php`.
 
+## Commit Message Expectations
+
+- Use the Conventional Commits format from https://www.conventionalcommits.org/.
+- Prefer clear, scoped commit types (for example: `feat:`, `fix:`, `docs:`, `chore:`).
+- Use `!` or a `BREAKING CHANGE:` footer when introducing breaking changes.
+
 ## Agent Workflow Expectation
 
 - Understand current behavior before editing.

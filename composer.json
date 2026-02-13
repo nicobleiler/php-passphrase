@@ -8,7 +8,7 @@
         "password",
         "generator",
         "eff",
-        "bitwarden",
+        "diceware",
         "laravel",
         "security"
     ],
@@ -21,10 +21,10 @@
         "php": "^8.2"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.0",
-        "phpunit/phpunit": "^11.0",
-        "genphrase/genphrase": "^1.2",
-        "martbock/laravel-diceware": "^2.1"
+        "orchestra/testbench": "^10.9.0",
+        "phpunit/phpunit": "^12.5.11",
+        "genphrase/genphrase": "^1.2.1",
+        "martbock/laravel-diceware": "^2.1.0"
     },
     "autoload": {
         "psr-4": {
