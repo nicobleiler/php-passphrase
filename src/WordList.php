@@ -33,32 +33,9 @@ class WordList
         }
 
         $compiledPath = self::effCompiledWordListPath();
+        $words = require $compiledPath;
 
-        if (file_exists($compiledPath) && is_readable($compiledPath)) {
-            try {
-                $words = require $compiledPath;
-
-                if (is_array($words) && count($words) > 0) {
-                    $allStrings = true;
-                    foreach ($words as $word) {
-                        if (! is_string($word)) {
-                            $allStrings = false;
-                            break;
-                        }
-                    }
-
-                    if ($allStrings) {
-                        $cachedEff = self::fromArray($words);
-
-                        return $cachedEff;
-                    }
-                }
-            } catch (\Throwable) {
-                // Fall back to parsing the txt file for compatibility.
-            }
-        }
-
-        $cachedEff = self::fromFile(self::effWordListPath());
+        $cachedEff = self::fromArray($words);
 
         return $cachedEff;
     }
@@ -188,14 +165,6 @@ class WordList
     public function all(): array
     {
         return $this->words;
-    }
-
-    /**
-     * Get the path to the bundled EFF large word list.
-     */
-    public static function effWordListPath(): string
-    {
-        return dirname(__DIR__) . '/resources/wordlists/eff_large_wordlist.txt';
     }
 
     /**
