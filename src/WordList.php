@@ -32,7 +32,10 @@ class WordList
             return $cachedEff;
         }
 
-        $cachedEff = self::fromFile(self::effWordListPath());
+        $compiledPath = self::effCompiledWordListPath();
+        $words = require $compiledPath;
+
+        $cachedEff = self::fromArray($words);
 
         return $cachedEff;
     }
@@ -61,18 +64,46 @@ class WordList
         }
 
         $words = [];
+        $firstNonEmptyLine = '';
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $firstNonEmptyLine = $line;
+                break;
+            }
+        }
+
+        if ($firstNonEmptyLine === '') {
+            throw WordListException::empty();
+        }
+
+        $firstWhitespacePos = strcspn($firstNonEmptyLine, " \t");
+        $isDiceWareFormat = $firstWhitespacePos > 0
+            && $firstWhitespacePos < strlen($firstNonEmptyLine)
+            && ctype_digit(substr($firstNonEmptyLine, 0, $firstWhitespacePos));
+
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '') {
                 continue;
             }
 
-            // Support EFF format (e.g. "11111\tabacus") or plain word per line
-            if (preg_match('/^\d+\s+(.+)$/', $line, $matches)) {
-                $words[] = $matches[1];
-            } else {
-                $words[] = $line;
+            if ($isDiceWareFormat) {
+                $whitespacePos = strcspn($line, " \t");
+
+                if ($whitespacePos > 0 && $whitespacePos < strlen($line)) {
+                    $diceKey = substr($line, 0, $whitespacePos);
+                    if (ctype_digit($diceKey)) {
+                        $word = ltrim(substr($line, $whitespacePos));
+                        if ($word !== '') {
+                            $words[] = $word;
+                            continue;
+                        }
+                    }
+                }
             }
+
+            $words[] = $line;
         }
 
         if (count($words) === 0) {
@@ -137,10 +168,10 @@ class WordList
     }
 
     /**
-     * Get the path to the bundled EFF large word list.
+     * Get the path to the compiled bundled EFF large word list.
      */
-    public static function effWordListPath(): string
+    public static function effCompiledWordListPath(): string
     {
-        return dirname(__DIR__) . '/resources/wordlists/eff_large_wordlist.txt';
+        return dirname(__DIR__) . '/resources/wordlists/eff_large_wordlist.php';
     }
 }
