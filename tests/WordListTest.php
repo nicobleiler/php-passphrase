@@ -10,6 +10,23 @@ use PHPUnit\Framework\TestCase;
 
 class WordListTest extends TestCase
 {
+    public function test_eff_compiled_word_list_file_exists(): void
+    {
+        $this->assertFileExists(WordList::effCompiledWordListPath());
+    }
+
+    public function test_eff_compiled_word_list_is_valid_array_of_strings(): void
+    {
+        $words = require WordList::effCompiledWordListPath();
+
+        $this->assertIsArray($words);
+        $this->assertNotEmpty($words);
+        $this->assertContainsOnly('string', $words);
+        $this->assertSame(7776, count($words));
+        $this->assertSame('abacus', $words[0]);
+        $this->assertSame('zoom', $words[count($words) - 1]);
+    }
+
     public function test_eff_word_list_loads_7776_words(): void
     {
         $wordList = WordList::eff();
