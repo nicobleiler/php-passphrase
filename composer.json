@@ -21,7 +21,7 @@
         "php": "^8.2"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.0",
+        "orchestra/testbench": "^10.0",
         "phpunit/phpunit": "^11.0",
         "genphrase/genphrase": "^1.2",
         "martbock/laravel-diceware": "^2.1"
