@@ -61,19 +61,46 @@ class WordList
         }
 
         $words = [];
-        $isDiceWareFormat = preg_match('/^\d+\s+.+$/', $lines[0]) === 1;
+        $firstNonEmptyLine = '';
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line !== '') {
+                $firstNonEmptyLine = $line;
+                break;
+            }
+        }
+
+        if ($firstNonEmptyLine === '') {
+            throw WordListException::empty();
+        }
+
+        $firstWhitespacePos = strcspn($firstNonEmptyLine, " \t");
+        $isDiceWareFormat = $firstWhitespacePos > 0
+            && $firstWhitespacePos < strlen($firstNonEmptyLine)
+            && ctype_digit(substr($firstNonEmptyLine, 0, $firstWhitespacePos));
+
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line === '') {
                 continue;
             }
 
-            // Support Dice Ware style or plain word per line
-            if ($isDiceWareFormat && preg_match('/^\d+\s+(.+)$/', $line, $matches)) {
-                $words[] = $matches[1];
-            } else {
-                $words[] = $line;
+            if ($isDiceWareFormat) {
+                $whitespacePos = strcspn($line, " \t");
+
+                if ($whitespacePos > 0 && $whitespacePos < strlen($line)) {
+                    $diceKey = substr($line, 0, $whitespacePos);
+                    if (ctype_digit($diceKey)) {
+                        $word = ltrim(substr($line, $whitespacePos));
+                        if ($word !== '') {
+                            $words[] = $word;
+                            continue;
+                        }
+                    }
+                }
             }
+
+            $words[] = $line;
         }
 
         if (count($words) === 0) {
