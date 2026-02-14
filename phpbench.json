@@ -1,0 +1,36 @@
+{
+    "$schema": "./vendor/phpbench/phpbench/phpbench.schema.json",
+    "runner.bootstrap": "vendor/autoload.php",
+    "runner.path": "benchmarks",
+    "runner.file_pattern": "*Bench.php",
+    "runner.iterations": 20,
+    "runner.revs": 1,
+    "runner.warmup": 0,
+    "runner.php_config": {
+        "xdebug.mode": "off",
+        "error_reporting": "8191"
+    },
+    "expression.strip_tailing_zeros": true,
+    "storage.xml_storage_path": ".phpbench/storage",
+    "report.generators": {
+        "providers": {
+            "extends": "aggregate",
+            "title": "Passphrase Provider Comparison",
+            "description": "Cold-start and warm-run comparison across passphrase generators and random baselines with near-matched entropy.",
+            "cols": [
+                "benchmark",
+                "subject",
+                "set",
+                "revs",
+                "its",
+                "mem_peak",
+                "mode",
+                "mean",
+                "rstdev"
+            ],
+            "break": [
+                "subject"
+            ]
+        }
+    }
+}
