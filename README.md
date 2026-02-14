@@ -156,6 +156,40 @@ The test suite includes tests modeled after Bitwarden's own test cases:
 - Separator handling (including multi-byte emoji)
 - EFF word list integrity
 - Laravel integration (service provider, facade, config)
+  
+## Performance (2026-02-14 02:41:47 MEZ)
+
+These benchmarks were run on a local Ryzen 9 5950X machine running Windows 11 with PHP 8.5.0.
+
+In warm-run benchmarks at similar entropy targets, php-passphrase is ~4.4× faster than genphrase/genphrase and ~1333× faster than martbock/laravel-diceware (based on mean time per generation).
+
+In cold-run benchmarks (startup + first generation), php-passphrase is ~5.6× faster than genphrase/genphrase and ~12.8× faster than martbock/laravel-diceware (based on mean time per generation).
+
+> **Note on cold runs:** `benchGenerateCold` includes setup and first-use initialization (autoloading, object construction, and initial word-list work). Cold-run `rstdev` is therefore expected to be higher and should be interpreted as startup-cost signal, not steady-state throughput.
+
+```
+benchGenerateCold
++----------------+-----------------------------------------------------+------+-----+-----------+-----------+---------+----------+
+| benchmark      | set                                                 | revs | its | mem_peak  | mode      | mean    | rstdev   |
++----------------+-----------------------------------------------------+------+-----+-----------+-----------+---------+----------+
+| ProvidersBench | php-passphrase (EFF 5 words, ~64.6 bits)            | 1    | 20  | 1.614mb   | 127.847μs | 320.5μs | ±241.90% |
+| ProvidersBench | genphrase/genphrase (65-bit target, diceware)       | 1    | 20  | 1.364mb   | 1.654ms   | 1.806ms | ±27.58%  |
+| ProvidersBench | martbock/laravel-diceware (EFF 5 words, ~64.6 bits) | 1    | 20  | 957.688kb | 3.608ms   | 4.106ms | ±35.28%  |
+| ProvidersBench | random_bytes(8) hex (~64 bits)                      | 1    | 20  | 493.784kb | 7.74μs    | 8.8μs   | ±21.14%  |
+| ProvidersBench | Illuminate\Support\Str::random(11) (~65.5 bits)     | 1    | 20  | 493.8kb   | 175.25μs  | 241μs   | ±79.83%  |
++----------------+-----------------------------------------------------+------+-----+-----------+-----------+---------+----------+
+
+benchGenerateWarm
++----------------+-----------------------------------------------------+------+-----+-----------+---------+---------+--------+
+| benchmark      | set                                                 | revs | its | mem_peak  | mode    | mean    | rstdev |
++----------------+-----------------------------------------------------+------+-----+-----------+---------+---------+--------+
+| ProvidersBench | php-passphrase (EFF 5 words, ~64.6 bits)            | 100  | 20  | 494.048kb | 1.596μs | 1.612μs | ±3.79% |
+| ProvidersBench | genphrase/genphrase (65-bit target, diceware)       | 100  | 20  | 1.363mb   | 6.956μs | 7.091μs | ±6.42% |
+| ProvidersBench | martbock/laravel-diceware (EFF 5 words, ~64.6 bits) | 100  | 20  | 508.944kb | 2.161ms | 2.149ms | ±2.87% |
+| ProvidersBench | random_bytes(8) hex (~64 bits)                      | 100  | 20  | 494.04kb  | 0.125μs | 0.125μs | ±7.38% |
+| ProvidersBench | Illuminate\Support\Str::random(11) (~65.5 bits)     | 100  | 20  | 494.056kb | 0.56μs  | 0.565μs | ±3.86% |
++----------------+-----------------------------------------------------+------+-----+-----------+---------+---------+--------+
+```
 
 ## Benchmarking
 
