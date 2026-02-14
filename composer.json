@@ -24,7 +24,8 @@
         "orchestra/testbench": "^10.9.0",
         "phpunit/phpunit": "^12.5.11",
         "genphrase/genphrase": "^1.2.1",
-        "martbock/laravel-diceware": "^2.1.0"
+        "martbock/laravel-diceware": "^2.1.0",
+        "phpbench/phpbench": "^1.4.3"
     },
     "autoload": {
         "psr-4": {
@@ -48,8 +49,9 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
-        "bench": "php benchmarks/run.php",
-        "bench:json": "php benchmarks/run.php --json"
+        "bench": "vendor/bin/phpbench run --report=providers",
+        "bench:baseline": "vendor/bin/phpbench run --tag=baseline --report=providers",
+        "bench:compare": "vendor/bin/phpbench run --ref=baseline --report=providers"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
