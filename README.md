@@ -1,5 +1,11 @@
 # PHP Passphrase Generator
 
+[![Latest Version](https://img.shields.io/packagist/v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![Downloads](https://img.shields.io/packagist/dt/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![PHP Version](https://img.shields.io/packagist/php-v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
+[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
+
 A Bitwarden-inspired passphrase generator for PHP with first-class Laravel integration.
 
 Generates secure, memorable passphrases using the [EFF long word list](https://www.eff.org/dice) (7,776 words) by default, with full support for custom word lists.
