@@ -159,34 +159,32 @@ The test suite includes tests modeled after Bitwarden's own test cases:
 
 ## Benchmarking
 
-Run the built-in benchmark harness:
+Run the benchmark suite with:
 
 ```bash
 composer bench
 ```
 
-JSON output (useful for CI, plotting, or ad-hoc analysis):
+The benchmark suite uses [PHPBench](https://github.com/phpbench/phpbench) and compares providers with near-matched entropy targets.
+
+Each provider is measured in two scenarios:
+
+- `benchGenerateCold` — includes provider setup + first generation (cold start)
+- `benchGenerateWarm` — measures steady-state generation after setup warmup
+
+Default stability settings (configured in `phpbench.json`):
+
+- iterations: `20`
+- revolutions: `1` (cold subject), `100` (warm subject)
+- warmup: `2` (warm subject only)
+
+You can override scale from CLI when needed, for example:
 
 ```bash
-composer bench:json
+vendor/bin/phpbench run --report=providers --iterations=40 --revs=5 --retry-threshold=5
 ```
 
-You can tune benchmark settings:
-
-```bash
-php benchmarks/run.php --iterations=10000 --warmup=500
-```
-
-The default benchmark is the official comparison set and uses normalized entropy targets ($\approx 64$-$65$ bits) for fair comparison across implementations.
-
-Pinned competitor packages (dev dependencies) used by the official benchmark:
-
-```bash
-composer require --dev genphrase/genphrase
-composer require --dev martbock/laravel-diceware
-```
-
-Official providers:
+Compared providers:
 
 - `php-passphrase` with EFF 5 words (~64.6 bits)
 - `genphrase/genphrase` with a 65-bit target on diceware mode
@@ -194,23 +192,11 @@ Official providers:
 - `random_bytes(8)` (~64 bits)
 - `Illuminate\\Support\\Str::random(11)` (~65.5 bits)
 
-The benchmark fails fast if any official provider is missing.
-
-The CLI output also includes category winners in two sections:
-
-- all providers (including non-passphrase baselines)
-- passphrase libraries only
-
-Each section reports:
-
-- best average speed
-- lowest memory consumption (retained memory delta, tie-break by peak delta)
-- fastest cold start
-
-You can benchmark a subset using repeated `--provider` flags:
+Baseline and comparison runs:
 
 ```bash
-php benchmarks/run.php --provider="php-passphrase (EFF 5 words, ~64.6 bits)" --provider="genphrase/genphrase (65-bit target, diceware)"
+composer bench:baseline
+composer bench:compare
 ```
 
 ## Requirements
