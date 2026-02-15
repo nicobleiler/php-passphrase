@@ -37,7 +37,6 @@ class WordList
      */
     private static function loadBundledEff(): self
     {
-
         $compiledPath = self::effCompiledWordListPath();
 
         if (! file_exists($compiledPath)) {
