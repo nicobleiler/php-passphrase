@@ -178,6 +178,11 @@ class PassphraseGenerator
         return $this->wordList;
     }
 
+    /**
+     * Validate the configured number of words.
+     *
+     * @throws InvalidNumWordsException
+     */
     private function validateNumWords(int $numWords): void
     {
         if ($numWords < self::MINIMUM_NUM_WORDS || $numWords > self::MAXIMUM_NUM_WORDS) {
