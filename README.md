@@ -197,6 +197,43 @@ php artisan vendor:publish --tag=passphrase-wordlists
 
 The generation algorithm mirrors [Bitwarden's Rust implementation](https://sdk-api-docs.bitwarden.com/src/bitwarden_generators/passphrase.rs.html):
 
+### Sequence diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant ServiceProvider
+    participant PassphraseGenerator
+    participant Randomizer
+    participant WordList
+
+    Client->>ServiceProvider: Boot (Laravel)
+    ServiceProvider->>WordList: Create (singleton)
+    ServiceProvider->>PassphraseGenerator: Create with Randomizer(Secure)
+    ServiceProvider->>PassphraseGenerator: setDefaults(config values)
+    activate PassphraseGenerator
+    PassphraseGenerator-->>ServiceProvider: self (fluent)
+    deactivate PassphraseGenerator
+
+    Client->>PassphraseGenerator: generate() [no params]
+    activate PassphraseGenerator
+    PassphraseGenerator->>PassphraseGenerator: Use instance defaults
+    PassphraseGenerator->>Randomizer: getInt() [select words]
+    activate Randomizer
+    Randomizer-->>PassphraseGenerator: random indices
+    deactivate Randomizer
+    PassphraseGenerator->>WordList: wordAt(index)
+    activate WordList
+    WordList-->>PassphraseGenerator: word string
+    deactivate WordList
+    PassphraseGenerator->>Randomizer: getInt() [digit if needed]
+    activate Randomizer
+    Randomizer-->>PassphraseGenerator: random digit
+    deactivate Randomizer
+    PassphraseGenerator-->>Client: passphrase string
+    deactivate PassphraseGenerator
+```
+
 ## Testing
 
 ```bash
