@@ -12,6 +12,10 @@ class PassphraseGenerator
     public const MAXIMUM_NUM_WORDS = 20;
 
     private WordList $wordList;
+    private int $defaultNumWords = 3;
+    private string $defaultWordSeparator = '-';
+    private bool $defaultCapitalize = false;
+    private bool $defaultIncludeNumber = false;
 
     public function __construct(?WordList $wordList = null)
     {
@@ -19,19 +23,47 @@ class PassphraseGenerator
     }
 
     /**
-     * Generate a passphrase.
+     * Set the default generation options.
      *
-     * @param int $numWords Number of words (3-20)
-     * @param string $wordSeparator Character(s) to separate words
-     * @param bool $capitalize Capitalize first letter of each word
-     * @param bool $includeNumber Append a random digit to a random word
+     * These defaults are used by generate() when parameters are not explicitly provided.
+     * In Laravel, the service provider calls this with values from config/passphrase.php.
      */
-    public function generate(
+    public function setDefaults(
         int $numWords = 3,
         string $wordSeparator = '-',
         bool $capitalize = false,
         bool $includeNumber = false,
+    ): self {
+        $this->defaultNumWords = $numWords;
+        $this->defaultWordSeparator = $wordSeparator;
+        $this->defaultCapitalize = $capitalize;
+        $this->defaultIncludeNumber = $includeNumber;
+
+        return $this;
+    }
+
+    /**
+     * Generate a passphrase.
+     *
+     * Parameters default to the instance defaults set via setDefaults().
+     * In Laravel, these come from config/passphrase.php.
+     *
+     * @param ?int $numWords Number of words (3-20), null to use instance default
+     * @param ?string $wordSeparator Character(s) to separate words, null to use instance default
+     * @param ?bool $capitalize Capitalize first letter of each word, null to use instance default
+     * @param ?bool $includeNumber Append a random digit to a random word, null to use instance default
+     */
+    public function generate(
+        ?int $numWords = null,
+        ?string $wordSeparator = null,
+        ?bool $capitalize = null,
+        ?bool $includeNumber = null,
     ): string {
+        $numWords ??= $this->defaultNumWords;
+        $wordSeparator ??= $this->defaultWordSeparator;
+        $capitalize ??= $this->defaultCapitalize;
+        $includeNumber ??= $this->defaultIncludeNumber;
+
         $this->validateNumWords($numWords);
 
         $words = $this->generateWords($numWords);

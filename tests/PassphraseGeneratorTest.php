@@ -393,6 +393,65 @@ class PassphraseGeneratorTest extends TestCase
     }
 
     // -------------------------------------------------------
+    // setDefaults tests
+    // -------------------------------------------------------
+
+    public function test_set_defaults_are_used_by_generate(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+        $generator = new PassphraseGenerator($wordList);
+
+        $generator->setDefaults(
+            numWords: 3,
+            wordSeparator: '.',
+            capitalize: true,
+            includeNumber: false,
+        );
+
+        $result = $generator->generate();
+        $words = explode('.', $result);
+
+        $this->assertCount(3, $words);
+        foreach ($words as $word) {
+            $first = mb_substr($word, 0, 1);
+            $this->assertSame(mb_strtoupper($first), $first, "Expected '{$word}' to be capitalized");
+        }
+    }
+
+    public function test_explicit_params_override_defaults(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+        $generator = new PassphraseGenerator($wordList);
+
+        $generator->setDefaults(
+            numWords: 5,
+            wordSeparator: '.',
+            capitalize: true,
+            includeNumber: true,
+        );
+
+        // Explicitly pass different values
+        $result = $generator->generate(
+            numWords: 3,
+            wordSeparator: '-',
+            capitalize: false,
+            includeNumber: false,
+        );
+
+        $words = explode('-', $result);
+        $this->assertCount(3, $words);
+        $this->assertSame(mb_strtolower($result), $result);
+        $this->assertDoesNotMatchRegularExpression('/\d/', $result);
+    }
+
+    public function test_set_defaults_returns_self(): void
+    {
+        $generator = new PassphraseGenerator();
+        $result = $generator->setDefaults();
+        $this->assertSame($generator, $result);
+    }
+
+    // -------------------------------------------------------
     // EFF word list tests
     // -------------------------------------------------------
 

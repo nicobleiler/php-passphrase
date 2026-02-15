@@ -23,7 +23,16 @@ class PassphraseServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(PassphraseGenerator::class, function ($app) {
-            return new PassphraseGenerator($app->make(WordList::class));
+            $generator = new PassphraseGenerator($app->make(WordList::class));
+
+            $generator->setDefaults(
+                numWords: (int) config('passphrase.num_words', 3),
+                wordSeparator: (string) config('passphrase.word_separator', '-'),
+                capitalize: (bool) config('passphrase.capitalize', false),
+                includeNumber: (bool) config('passphrase.include_number', false),
+            );
+
+            return $generator;
         });
 
         $this->app->alias(PassphraseGenerator::class, 'passphrase');
