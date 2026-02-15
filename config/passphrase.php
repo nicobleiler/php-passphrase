@@ -46,16 +46,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Word List Path
+    | Word List
     |--------------------------------------------------------------------------
     |
-    | Path to the word list file. Each line should contain a word, optionally
-    | preceded by a numeric index and whitespace (like the EFF format).
+    | Custom word list as a PHP array of strings.
     |
     | Set to null to use the bundled EFF long word list (7776 words).
-    | Or provide an absolute path to your own word list file.
+    | Or provide your own list, for example: ['correct', 'horse', 'battery', 'staple']
     |
     */
-    'word_list_path' => null,
+    'word_list' => null,
 
 ];

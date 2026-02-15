@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase;
 
 use NicoBleiler\Passphrase\Exceptions\WordListException;
+use OutOfRangeException;
 
 class WordList
 {
@@ -14,7 +15,7 @@ class WordList
     private ?int $wordCount = null;
 
     /**
-     * @param string[] $words
+     * @param  string[]  $words
      */
     private function __construct(array $words)
     {
@@ -28,118 +29,60 @@ class WordList
     {
         static $cachedEff = null;
 
-        if ($cachedEff instanceof self) {
-            return $cachedEff;
-        }
-
-        $compiledPath = self::effCompiledWordListPath();
-        $words = require $compiledPath;
-
-        $cachedEff = self::fromArray($words);
-
-        return $cachedEff;
+        return $cachedEff ??= self::loadBundledEff();
     }
 
-    /**
-     * Load a word list from a file.
-     *
-     * Supports two formats:
-     * - One word per line
-     * - EFF format: numeric index, whitespace, then word (e.g. "11111\tabacus")
-     */
-    public static function fromFile(string $path): self
+    private static function loadBundledEff(): self
     {
-        if (! file_exists($path) || ! is_readable($path)) {
-            throw WordListException::fileNotFound($path);
+
+        $compiledPath = self::effCompiledWordListPath();
+
+        if (! file_exists($compiledPath)) {
+            throw WordListException::fileNotFound($compiledPath);
         }
 
-        $contents = file_get_contents($path);
-        if ($contents === false) {
-            throw WordListException::fileNotFound($path);
-        }
+        $words = require $compiledPath;
 
-        $lines = preg_split('/\r?\n/', trim($contents));
-        if ($lines === false || count($lines) === 0) {
+        if (! is_array($words) || $words === []) {
             throw WordListException::empty();
         }
 
-        $words = [];
-        $firstNonEmptyLine = '';
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line !== '') {
-                $firstNonEmptyLine = $line;
-                break;
-            }
-        }
-
-        if ($firstNonEmptyLine === '') {
-            throw WordListException::empty();
-        }
-
-        $firstWhitespacePos = strcspn($firstNonEmptyLine, " \t");
-        $isDiceWareFormat = $firstWhitespacePos > 0
-            && $firstWhitespacePos < strlen($firstNonEmptyLine)
-            && ctype_digit(substr($firstNonEmptyLine, 0, $firstWhitespacePos));
-
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
-            }
-
-            if ($isDiceWareFormat) {
-                $whitespacePos = strcspn($line, " \t");
-
-                if ($whitespacePos > 0 && $whitespacePos < strlen($line)) {
-                    $diceKey = substr($line, 0, $whitespacePos);
-                    if (ctype_digit($diceKey)) {
-                        $word = ltrim(substr($line, $whitespacePos));
-                        if ($word !== '') {
-                            $words[] = $word;
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            $words[] = $line;
-        }
-
-        if (count($words) === 0) {
-            throw WordListException::empty();
-        }
-
-        return new self($words);
+        return self::fromArray($words);
     }
 
     /**
      * Create a word list from an array of words.
      *
-     * @param string[] $words
+     * @param  string[]  $words
      */
     public static function fromArray(array $words): self
     {
-        if (count($words) === 0) {
+        if ($words === []) {
             throw WordListException::empty();
+        }
+
+        foreach ($words as $word) {
+            if (! is_string($word)) {
+                throw WordListException::invalidType();
+            }
         }
 
         return new self($words);
     }
 
     /**
-     * Get a random word from the list.
-     */
-    public function randomWord(): string
-    {
-        return $this->words[random_int(0, $this->count() - 1)];
-    }
-
-    /**
      * Get the word at a specific index.
+     *
+     * @throws OutOfRangeException If the index is out of bounds
      */
     public function wordAt(int $index): string
     {
+        if ($index < 0 || $index >= $this->count()) {
+            throw new OutOfRangeException(
+                sprintf('Word index %d is out of range [0, %d)', $index, $this->count())
+            );
+        }
+
         return $this->words[$index];
     }
 
@@ -148,13 +91,7 @@ class WordList
      */
     public function count(): int
     {
-        if ($this->wordCount !== null) {
-            return $this->wordCount;
-        }
-
-        $this->wordCount = count($this->words);
-
-        return $this->wordCount;
+        return $this->wordCount ??= count($this->words);
     }
 
     /**
@@ -172,6 +109,6 @@ class WordList
      */
     public static function effCompiledWordListPath(): string
     {
-        return dirname(__DIR__) . '/resources/wordlists/eff_large_wordlist.php';
+        return dirname(__DIR__).'/resources/wordlists/eff_large_wordlist.php';
     }
 }
