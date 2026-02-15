@@ -13,6 +13,9 @@ use Orchestra\Testbench\TestCase;
 
 class LaravelIntegrationTest extends TestCase
 {
+    /**
+     * Re-register the provider to apply updated config bindings.
+     */
     private function refreshServiceProvider(): void
     {
         $this->app->forgetInstance(WordList::class);
@@ -20,11 +23,17 @@ class LaravelIntegrationTest extends TestCase
         (new PassphraseServiceProvider($this->app))->register();
     }
 
+    /**
+     * Registers package providers for Testbench.
+     */
     protected function getPackageProviders($app): array
     {
         return [PassphraseServiceProvider::class];
     }
 
+    /**
+     * Registers package facade aliases for Testbench.
+     */
     protected function getPackageAliases($app): array
     {
         return [
