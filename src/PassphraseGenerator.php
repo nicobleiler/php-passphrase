@@ -156,7 +156,7 @@ class PassphraseGenerator
     /**
      * Capitalize the first letter of a string.
      *
-     * Handles multibyte characters correctly (like Bitwarden's implementation).
+     * Handles multibyte characters correctly.
      */
     public static function capitalizeFirstLetter(string $s): string
     {
@@ -178,6 +178,11 @@ class PassphraseGenerator
         return $this->wordList;
     }
 
+    /**
+     * Validate the configured number of words.
+     *
+     * @throws InvalidNumWordsException
+     */
     private function validateNumWords(int $numWords): void
     {
         if ($numWords < self::MINIMUM_NUM_WORDS || $numWords > self::MAXIMUM_NUM_WORDS) {

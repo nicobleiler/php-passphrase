@@ -32,9 +32,11 @@ class WordList
         return $cachedEff ??= self::loadBundledEff();
     }
 
+    /**
+     * Load and validate the bundled compiled EFF word list.
+     */
     private static function loadBundledEff(): self
     {
-
         $compiledPath = self::effCompiledWordListPath();
 
         if (! file_exists($compiledPath)) {
