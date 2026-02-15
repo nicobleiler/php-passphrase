@@ -25,11 +25,11 @@ class PassphraseGenerator
     private bool $defaultIncludeNumber = false;
 
     /**
-     * @param  ?Randomizer  $randomizer
-     *                                   Optional. Defaults to a cryptographically secure randomizer.
-     *                                   Advanced use: inject for deterministic tests or reproducible output.
+     * @param  Randomizer  $randomizer
+     *                                  Optional. Defaults to a cryptographically secure randomizer.
+     *                                  Advanced use: inject for deterministic tests or reproducible output.
      */
-    public function __construct(?WordList $wordList = null, private ?Randomizer $randomizer = new Randomizer(new Secure))
+    public function __construct(?WordList $wordList = null, private Randomizer $randomizer = new Randomizer(new Secure))
     {
         $this->wordList = $wordList ?? WordList::eff();
     }
