@@ -193,6 +193,8 @@ You can also publish the bundled EFF word list to your resources folder:
 php artisan vendor:publish --tag=passphrase-wordlists
 ```
 
+This is optional and mainly useful if you want a local copy to inspect or customize. By default, the package reads the bundled EFF list directly.
+
 ## How It Works
 
 The generation algorithm mirrors [Bitwarden's Rust implementation](https://sdk-api-docs.bitwarden.com/src/bitwarden_generators/passphrase.rs.html):
