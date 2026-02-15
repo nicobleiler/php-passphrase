@@ -57,28 +57,21 @@ class LaravelIntegrationTest extends TestCase
         $this->assertSame('-', config('passphrase.word_separator'));
         $this->assertFalse(config('passphrase.capitalize'));
         $this->assertFalse(config('passphrase.include_number'));
-        $this->assertNull(config('passphrase.word_list_path'));
+        $this->assertNull(config('passphrase.word_list'));
     }
 
     public function test_custom_word_list_from_config(): void
     {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'wl_');
-        file_put_contents($tmpFile, "correct\nhorse\nbattery\nstaple\n");
+        config(['passphrase.word_list' => ['correct', 'horse', 'battery', 'staple']]);
 
-        try {
-            config(['passphrase.word_list_path' => $tmpFile]);
+        // Re-register to pick up new config
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
 
-            // Re-register to pick up new config
-            $this->app->forgetInstance(WordList::class);
-            $this->app->forgetInstance(PassphraseGenerator::class);
-            (new PassphraseServiceProvider($this->app))->register();
-
-            $wordList = $this->app->make(WordList::class);
-            $this->assertSame(4, $wordList->count());
-            $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
-        } finally {
-            unlink($tmpFile);
-        }
+        $wordList = $this->app->make(WordList::class);
+        $this->assertSame(4, $wordList->count());
+        $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
     }
 
     public function test_config_defaults_are_applied_to_generator(): void

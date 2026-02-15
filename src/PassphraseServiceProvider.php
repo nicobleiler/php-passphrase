@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase;
 
 use Illuminate\Support\ServiceProvider;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 
 class PassphraseServiceProvider extends ServiceProvider
 {
@@ -13,10 +14,14 @@ class PassphraseServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/passphrase.php', 'passphrase');
 
         $this->app->singleton(WordList::class, function (): \NicoBleiler\Passphrase\WordList {
-            $path = config('passphrase.word_list_path');
+            $wordList = config('passphrase.word_list');
 
-            if ($path !== null) {
-                return WordList::fromFile($path);
+            if ($wordList !== null) {
+                if (! is_array($wordList)) {
+                    throw WordListException::invalidType();
+                }
+
+                return WordList::fromArray($wordList);
             }
 
             return WordList::eff();
