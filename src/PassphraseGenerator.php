@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase;
 
 use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
+use Random\Engine\Secure;
+use Random\Randomizer;
 
 class PassphraseGenerator
 {
@@ -12,14 +14,21 @@ class PassphraseGenerator
     public const MAXIMUM_NUM_WORDS = 20;
 
     private WordList $wordList;
+    private Randomizer $randomizer;
     private int $defaultNumWords = 3;
     private string $defaultWordSeparator = '-';
     private bool $defaultCapitalize = false;
     private bool $defaultIncludeNumber = false;
 
-    public function __construct(?WordList $wordList = null)
+    /**
+     * @param ?Randomizer $randomizer 
+     * Optional. Defaults to a cryptographically secure randomizer.
+     * Advanced use: inject for deterministic tests or reproducible output.
+     */
+    public function __construct(?WordList $wordList = null, ?Randomizer $randomizer = null)
     {
         $this->wordList = $wordList ?? WordList::eff();
+        $this->randomizer = $randomizer ?? new Randomizer(new Secure());
     }
 
     /**
@@ -50,10 +59,10 @@ class PassphraseGenerator
      * Parameters default to the instance defaults set via setDefaults().
      * In Laravel, these come from config/passphrase.php.
      *
-     * @param ?int $numWords Number of words (3-20), null to use instance default
-     * @param ?string $wordSeparator Character(s) to separate words, null to use instance default
-     * @param ?bool $capitalize Capitalize first letter of each word, null to use instance default
-     * @param ?bool $includeNumber Append a random digit to a random word, null to use instance default
+     * @param  ?int  $numWords  Number of words (MINIMUM_NUM_WORDS-MAXIMUM_NUM_WORDS), null to use instance default
+     * @param  ?string  $wordSeparator  Character(s) to separate words, null to use instance default
+     * @param  ?bool  $capitalize  Capitalize first letter of each word, null to use instance default
+     * @param  ?bool  $includeNumber  Append a random digit to a random word, null to use instance default
      */
     public function generate(
         ?int $numWords = null,
@@ -82,38 +91,6 @@ class PassphraseGenerator
     }
 
     /**
-     * Generate words using a seeded random number generator for deterministic output.
-     * This is used internally for testing.
-     *
-     * @param int $numWords Number of words to generate
-     * @param string $wordSeparator Separator between words
-     * @param bool $capitalize Capitalize first letter of each word
-     * @param bool $includeNumber Append a random digit to a random word
-     * @param callable $rngInt A function that returns a random integer: fn(int $min, int $max): int
-     */
-    public function generateWithRng(
-        int $numWords,
-        string $wordSeparator,
-        bool $capitalize,
-        bool $includeNumber,
-        callable $rngInt,
-    ): string {
-        $this->validateNumWords($numWords);
-
-        $words = $this->generateWordsWithRng($numWords, $rngInt);
-
-        if ($includeNumber) {
-            $this->includeNumberInWordsWithRng($words, $rngInt);
-        }
-
-        if ($capitalize) {
-            $this->capitalizeWords($words);
-        }
-
-        return implode($wordSeparator, $words);
-    }
-
-    /**
      * Generate random words from the word list.
      *
      * @return string[]
@@ -123,24 +100,7 @@ class PassphraseGenerator
         $wordCount = $this->wordList->count();
         $words = [];
         for ($i = 0; $i < $numWords; $i++) {
-            $index = random_int(0, $wordCount - 1);
-            $words[] = $this->wordList->wordAt($index);
-        }
-
-        return $words;
-    }
-
-    /**
-     * Generate words using a custom RNG function.
-     *
-     * @return string[]
-     */
-    private function generateWordsWithRng(int $numWords, callable $rngInt): array
-    {
-        $wordCount = $this->wordList->count();
-        $words = [];
-        for ($i = 0; $i < $numWords; $i++) {
-            $index = $rngInt(0, $wordCount - 1);
+            $index = $this->randomizer->getInt(0, $wordCount - 1);
             $words[] = $this->wordList->wordAt($index);
         }
 
@@ -150,24 +110,12 @@ class PassphraseGenerator
     /**
      * Append a random digit (0-9) to a randomly selected word.
      *
-     * @param string[] &$words
+     * @param  string[]  &$words
      */
     private function includeNumberInWords(array &$words): void
     {
-        $index = random_int(0, count($words) - 1);
-        $digit = random_int(0, 9);
-        $words[$index] .= (string) $digit;
-    }
-
-    /**
-     * Append a random digit (0-9) to a randomly selected word using a custom RNG.
-     *
-     * @param string[] &$words
-     */
-    private function includeNumberInWordsWithRng(array &$words, callable $rngInt): void
-    {
-        $index = $rngInt(0, count($words) - 1);
-        $digit = $rngInt(0, 9);
+        $index = $this->randomizer->getInt(0, count($words) - 1);
+        $digit = $this->randomizer->getInt(0, 9);
         $words[$index] .= (string) $digit;
     }
 
@@ -176,7 +124,7 @@ class PassphraseGenerator
      *
      * Supports multibyte/unicode characters.
      *
-     * @param string[] &$words
+     * @param  string[]  &$words
      */
     private function capitalizeWords(array &$words): void
     {

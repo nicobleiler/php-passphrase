@@ -8,6 +8,8 @@ use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\WordList;
 use PHPUnit\Framework\TestCase;
+use Random\Engine\Mt19937;
+use Random\Randomizer;
 
 /**
  * Tests modeled after Bitwarden's passphrase generator tests.
@@ -21,33 +23,9 @@ class PassphraseGeneratorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->generator = new PassphraseGenerator();
-    }
-
-    // -------------------------------------------------------
-    // Seeded RNG helper — provides deterministic sequences
-    // for reproducible tests, similar to Bitwarden's
-    // ChaCha8Rng::from_seed approach.
-    // -------------------------------------------------------
-
-    /**
-     * Create a deterministic RNG function using a seed.
-     *
-     * Returns a callable fn(int $min, int $max): int that produces
-     * a deterministic sequence of integers based on the seed.
-     */
-    private function seededRng(int $seed = 0): callable
-    {
-        // Use a simple LCG seeded PRNG for deterministic output
-        $state = $seed;
-
-        return function (int $min, int $max) use (&$state): int {
-            // Linear congruential generator parameters (Numerical Recipes)
-            $state = (1664525 * $state + 1013904223) & 0x7FFFFFFF;
-            $range = $max - $min + 1;
-
-            return $min + ($state % $range);
-        };
+        $this->generator = new PassphraseGenerator(
+            randomizer: new Randomizer(new Mt19937(0)),
+        );
     }
 
     // -------------------------------------------------------
@@ -102,44 +80,22 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_gen_words_deterministic(): void
     {
-        $rng = $this->seededRng(42);
+        $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937(42)));
+        $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937(42)));
 
-        $result = $this->generator->generateWithRng(
-            numWords: 4,
-            wordSeparator: ' ',
-            capitalize: false,
-            includeNumber: false,
-            rngInt: $rng,
-        );
+        $result1 = $gen1->generate(numWords: 4, wordSeparator: ' ');
+        $result2 = $gen2->generate(numWords: 4, wordSeparator: ' ');
 
-        $words = explode(' ', $result);
-        $this->assertCount(4, $words);
-
-        // Same seed must produce the same result
-        $rng2 = $this->seededRng(42);
-
-        $result2 = $this->generator->generateWithRng(
-            numWords: 4,
-            wordSeparator: ' ',
-            capitalize: false,
-            includeNumber: false,
-            rngInt: $rng2,
-        );
-
-        $this->assertSame($result, $result2);
+        $this->assertCount(4, explode(' ', $result1));
+        $this->assertSame($result1, $result2);
     }
 
     public function test_gen_words_different_counts(): void
     {
-        $rng = $this->seededRng(0);
-
-        // 4 words
-        $result4 = $this->generator->generateWithRng(4, ' ', false, false, $rng);
+        $result4 = $this->generator->generate(numWords: 4, wordSeparator: ' ');
         $this->assertCount(4, explode(' ', $result4));
 
-        // 1 word would be below minimum, so test 3
-        $rng = $this->seededRng(1);
-        $result3 = $this->generator->generateWithRng(3, ' ', false, false, $rng);
+        $result3 = $this->generator->generate(numWords: 3, wordSeparator: ' ');
         $this->assertCount(3, explode(' ', $result3));
     }
 
@@ -169,25 +125,13 @@ class PassphraseGeneratorTest extends TestCase
     public function test_capitalize_words(): void
     {
         $wordList = WordList::fromArray(['hello', 'world']);
-        $generator = new PassphraseGenerator($wordList);
+        $generator = new PassphraseGenerator($wordList, new Randomizer(new Mt19937(0)));
 
-        // Use a seeded RNG that picks words in order
-        $idx = 0;
-        $rng = function (int $min, int $max) use (&$idx, $wordList): int {
-            // For word selection, just go in order
-            if ($max === $wordList->count() - 1) {
-                return $idx++ % $wordList->count();
-            }
-
-            return $min; // For any other random call, return minimum
-        };
-
-        $result = $generator->generateWithRng(
-            numWords: 3, // request 3 to pass validation — but only 2 unique words
+        $result = $generator->generate(
+            numWords: 3,
             wordSeparator: ' ',
             capitalize: true,
             includeNumber: false,
-            rngInt: $rng,
         );
 
         // Each word should be capitalized
@@ -207,29 +151,21 @@ class PassphraseGeneratorTest extends TestCase
     public function test_include_number(): void
     {
         $wordList = WordList::fromArray(['hello', 'world']);
-        $generator = new PassphraseGenerator($wordList);
+        $generator = new PassphraseGenerator($wordList, new Randomizer(new Mt19937(0)));
 
-        $calls = 0;
-        $sequence = [
-            0, // first word index -> 'hello'
-            1, // second word index -> 'world'
-            0, // third word index -> 'hello'
-            1, // include_number: pick word index 1 ('world')
-            7, // include_number: append digit 7
-        ];
-        $rng = function (int $min, int $max) use (&$calls, $sequence): int {
-            return $sequence[$calls++];
-        };
-
-        $result = $generator->generateWithRng(
+        $result = $generator->generate(
             numWords: 3,
             wordSeparator: ' ',
             capitalize: false,
             includeNumber: true,
-            rngInt: $rng,
         );
 
-        $this->assertSame('hello world7 hello', $result);
+        $words = explode(' ', $result);
+        $this->assertCount(3, $words);
+
+        // Exactly one word should end with a digit
+        $wordsWithDigit = array_filter($words, fn($w) => preg_match('/\d$/', $w));
+        $this->assertCount(1, $wordsWithDigit);
     }
 
     public function test_include_number_appends_digit_0_to_9(): void
@@ -263,14 +199,9 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_separator(): void
     {
-        $rng = $this->seededRng(99);
-
-        $result = $this->generator->generateWithRng(
+        $result = $this->generator->generate(
             numWords: 4,
             wordSeparator: '👨🏻‍❤️‍💋‍👨🏻',
-            capitalize: false,
-            includeNumber: false,
-            rngInt: $rng,
         );
 
         $parts = explode('👨🏻‍❤️‍💋‍👨🏻', $result);
@@ -298,14 +229,11 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_passphrase_with_all_options(): void
     {
-        $rng = $this->seededRng(42);
-
-        $result = $this->generator->generateWithRng(
+        $result = $this->generator->generate(
             numWords: 4,
             wordSeparator: '-',
             capitalize: true,
             includeNumber: true,
-            rngInt: $rng,
         );
 
         $parts = explode('-', $result);
@@ -331,11 +259,11 @@ class PassphraseGeneratorTest extends TestCase
     public function test_passphrase_deterministic_same_seed(): void
     {
         for ($seed = 0; $seed < 5; $seed++) {
-            $rng1 = $this->seededRng($seed);
-            $rng2 = $this->seededRng($seed);
+            $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937($seed)));
+            $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937($seed)));
 
-            $result1 = $this->generator->generateWithRng(4, '-', true, true, $rng1);
-            $result2 = $this->generator->generateWithRng(4, '-', true, true, $rng2);
+            $result1 = $gen1->generate(numWords: 4, wordSeparator: '-', capitalize: true, includeNumber: true);
+            $result2 = $gen2->generate(numWords: 4, wordSeparator: '-', capitalize: true, includeNumber: true);
 
             $this->assertSame($result1, $result2, "Seed {$seed} should produce identical output");
         }
@@ -343,14 +271,11 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_passphrase_no_capitalize_no_number(): void
     {
-        $rng = $this->seededRng(10);
-
-        $result = $this->generator->generateWithRng(
+        $result = $this->generator->generate(
             numWords: 5,
             wordSeparator: ';',
             capitalize: false,
             includeNumber: false,
-            rngInt: $rng,
         );
 
         $parts = explode(';', $result);
@@ -365,14 +290,11 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_passphrase_capitalize_no_number(): void
     {
-        $rng = $this->seededRng(20);
-
-        $result = $this->generator->generateWithRng(
+        $result = $this->generator->generate(
             numWords: 3,
             wordSeparator: ' ',
             capitalize: true,
             includeNumber: false,
-            rngInt: $rng,
         );
 
         $parts = explode(' ', $result);
