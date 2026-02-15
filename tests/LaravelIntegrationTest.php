@@ -13,6 +13,13 @@ use Orchestra\Testbench\TestCase;
 
 class LaravelIntegrationTest extends TestCase
 {
+    private function refreshServiceProvider(): void
+    {
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
+    }
+
     protected function getPackageProviders($app): array
     {
         return [PassphraseServiceProvider::class];
@@ -65,10 +72,7 @@ class LaravelIntegrationTest extends TestCase
     {
         config(['passphrase.word_list' => ['correct', 'horse', 'battery', 'staple']]);
 
-        // Re-register to pick up new config
-        $this->app->forgetInstance(WordList::class);
-        $this->app->forgetInstance(PassphraseGenerator::class);
-        (new PassphraseServiceProvider($this->app))->register();
+        $this->refreshServiceProvider();
 
         $wordList = $this->app->make(WordList::class);
         $this->assertSame(4, $wordList->count());
@@ -95,10 +99,7 @@ class LaravelIntegrationTest extends TestCase
         try {
             config(['passphrase.word_list' => require $tmpFile]);
 
-            // Re-register to pick up new config
-            $this->app->forgetInstance(WordList::class);
-            $this->app->forgetInstance(PassphraseGenerator::class);
-            (new PassphraseServiceProvider($this->app))->register();
+            $this->refreshServiceProvider();
 
             $wordList = $this->app->make(WordList::class);
             $this->assertSame(4, $wordList->count());
@@ -112,9 +113,7 @@ class LaravelIntegrationTest extends TestCase
     {
         config(['passphrase.word_list' => '/path/to/list.php']);
 
-        $this->app->forgetInstance(WordList::class);
-        $this->app->forgetInstance(PassphraseGenerator::class);
-        (new PassphraseServiceProvider($this->app))->register();
+        $this->refreshServiceProvider();
 
         $this->expectExceptionObject(WordListException::invalidConfigType());
 
@@ -130,10 +129,7 @@ class LaravelIntegrationTest extends TestCase
             'passphrase.include_number' => false,
         ]);
 
-        // Re-register to pick up new config
-        $this->app->forgetInstance(WordList::class);
-        $this->app->forgetInstance(PassphraseGenerator::class);
-        (new PassphraseServiceProvider($this->app))->register();
+        $this->refreshServiceProvider();
 
         $result = Passphrase::generate();
         $words = explode('.', $result);
@@ -157,9 +153,7 @@ class LaravelIntegrationTest extends TestCase
             'passphrase.include_number' => true,
         ]);
 
-        $this->app->forgetInstance(WordList::class);
-        $this->app->forgetInstance(PassphraseGenerator::class);
-        (new PassphraseServiceProvider($this->app))->register();
+        $this->refreshServiceProvider();
 
         $result = Passphrase::generate();
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
