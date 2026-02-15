@@ -11,24 +11,27 @@ use Random\Randomizer;
 class PassphraseGenerator
 {
     public const MINIMUM_NUM_WORDS = 3;
+
     public const MAXIMUM_NUM_WORDS = 20;
 
     private WordList $wordList;
-    private Randomizer $randomizer;
+
     private int $defaultNumWords = 3;
+
     private string $defaultWordSeparator = '-';
+
     private bool $defaultCapitalize = false;
+
     private bool $defaultIncludeNumber = false;
 
     /**
-     * @param ?Randomizer $randomizer 
-     * Optional. Defaults to a cryptographically secure randomizer.
-     * Advanced use: inject for deterministic tests or reproducible output.
+     * @param  ?Randomizer  $randomizer
+     *                                   Optional. Defaults to a cryptographically secure randomizer.
+     *                                   Advanced use: inject for deterministic tests or reproducible output.
      */
-    public function __construct(?WordList $wordList = null, ?Randomizer $randomizer = null)
+    public function __construct(?WordList $wordList = null, private ?Randomizer $randomizer = new Randomizer(new Secure))
     {
         $this->wordList = $wordList ?? WordList::eff();
-        $this->randomizer = $randomizer ?? new Randomizer(new Secure());
     }
 
     /**
@@ -132,6 +135,7 @@ class PassphraseGenerator
         foreach ($words as &$word) {
             $word = self::capitalizeFirstLetter($word);
         }
+
         unset($word);
     }
 
@@ -149,7 +153,7 @@ class PassphraseGenerator
         $firstChar = mb_substr($s, 0, 1, 'UTF-8');
         $rest = mb_substr($s, 1, null, 'UTF-8');
 
-        return mb_strtoupper($firstChar, 'UTF-8') . $rest;
+        return mb_strtoupper($firstChar, 'UTF-8').$rest;
     }
 
     /**

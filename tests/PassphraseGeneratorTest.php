@@ -164,7 +164,7 @@ class PassphraseGeneratorTest extends TestCase
         $this->assertCount(3, $words);
 
         // Exactly one word should end with a digit
-        $wordsWithDigit = array_filter($words, fn($w) => preg_match('/\d$/', $w));
+        $wordsWithDigit = array_filter($words, fn ($w): int|false => preg_match('/\d$/', (string) $w));
         $this->assertCount(1, $wordsWithDigit);
     }
 
@@ -189,6 +189,7 @@ class PassphraseGeneratorTest extends TestCase
                     $this->assertLessThanOrEqual(9, $digit);
                 }
             }
+
             $this->assertTrue($hasNumber, 'Expected at least one word to have an appended number');
         }
     }
@@ -252,7 +253,7 @@ class PassphraseGeneratorTest extends TestCase
         }
 
         // Exactly one word should end with a digit
-        $wordsWithDigit = array_filter($parts, fn($p) => preg_match('/\d$/', $p));
+        $wordsWithDigit = array_filter($parts, fn ($p): int|false => preg_match('/\d$/', (string) $p));
         $this->assertCount(1, $wordsWithDigit);
     }
 
@@ -376,14 +377,14 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_set_defaults_returns_self(): void
     {
-        $generator = new PassphraseGenerator();
+        $generator = new PassphraseGenerator;
         $result = $generator->setDefaults();
         $this->assertSame($generator, $result);
     }
 
     public function test_set_defaults_validates_num_words(): void
     {
-        $generator = new PassphraseGenerator();
+        $generator = new PassphraseGenerator;
 
         $this->expectException(InvalidNumWordsException::class);
         $generator->setDefaults(numWords: PassphraseGenerator::MINIMUM_NUM_WORDS - 1);

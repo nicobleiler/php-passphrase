@@ -6,6 +6,7 @@ namespace NicoBleiler\Passphrase\Tests;
 
 use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\WordList;
+use OutOfRangeException;
 use PHPUnit\Framework\TestCase;
 
 class WordListTest extends TestCase
@@ -139,7 +140,7 @@ class WordListTest extends TestCase
     {
         $wordList = WordList::fromArray(['alpha', 'bravo']);
 
-        $this->expectException(\OutOfRangeException::class);
+        $this->expectException(OutOfRangeException::class);
         $wordList->wordAt(-1);
     }
 
@@ -147,7 +148,7 @@ class WordListTest extends TestCase
     {
         $wordList = WordList::fromArray(['alpha', 'bravo']);
 
-        $this->expectException(\OutOfRangeException::class);
+        $this->expectException(OutOfRangeException::class);
         $wordList->wordAt(2);
     }
 
