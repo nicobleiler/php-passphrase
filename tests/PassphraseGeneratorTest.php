@@ -8,7 +8,7 @@ use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\WordList;
 use PHPUnit\Framework\TestCase;
-use Random\Engine\Mt19937;
+use Random\Engine\Xoshiro256StarStar;
 use Random\Randomizer;
 
 /**
@@ -24,7 +24,7 @@ class PassphraseGeneratorTest extends TestCase
     {
         parent::setUp();
         $this->generator = new PassphraseGenerator(
-            randomizer: new Randomizer(new Mt19937(0)),
+            randomizer: new Randomizer(new Xoshiro256StarStar(0)),
         );
     }
 
@@ -80,8 +80,8 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_gen_words_deterministic(): void
     {
-        $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937(42)));
-        $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937(42)));
+        $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Xoshiro256StarStar(42)));
+        $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Xoshiro256StarStar(42)));
 
         $result1 = $gen1->generate(numWords: 4, wordSeparator: ' ');
         $result2 = $gen2->generate(numWords: 4, wordSeparator: ' ');
@@ -125,7 +125,7 @@ class PassphraseGeneratorTest extends TestCase
     public function test_capitalize_words(): void
     {
         $wordList = WordList::fromArray(['hello', 'world']);
-        $generator = new PassphraseGenerator($wordList, new Randomizer(new Mt19937(0)));
+        $generator = new PassphraseGenerator($wordList, new Randomizer(new Xoshiro256StarStar(0)));
 
         $result = $generator->generate(
             numWords: 3,
@@ -151,7 +151,7 @@ class PassphraseGeneratorTest extends TestCase
     public function test_include_number(): void
     {
         $wordList = WordList::fromArray(['hello', 'world']);
-        $generator = new PassphraseGenerator($wordList, new Randomizer(new Mt19937(0)));
+        $generator = new PassphraseGenerator($wordList, new Randomizer(new Xoshiro256StarStar(0)));
 
         $result = $generator->generate(
             numWords: 3,
@@ -259,8 +259,8 @@ class PassphraseGeneratorTest extends TestCase
     public function test_passphrase_deterministic_same_seed(): void
     {
         for ($seed = 0; $seed < 5; $seed++) {
-            $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937($seed)));
-            $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Mt19937($seed)));
+            $gen1 = new PassphraseGenerator(randomizer: new Randomizer(new Xoshiro256StarStar($seed)));
+            $gen2 = new PassphraseGenerator(randomizer: new Randomizer(new Xoshiro256StarStar($seed)));
 
             $result1 = $gen1->generate(numWords: 4, wordSeparator: '-', capitalize: true, includeNumber: true);
             $result2 = $gen2->generate(numWords: 4, wordSeparator: '-', capitalize: true, includeNumber: true);
