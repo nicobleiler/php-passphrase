@@ -8,7 +8,49 @@ on:
     branches: [dev, alpha, beta, master]
 
 jobs:
+  quality:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
+
+    name: Quality checks (lint + types)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-8.4-quality-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.4-quality-
+
+      - name: Validate composer files
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run lint checks
+        run: composer test:lint
+
+      - name: Run type checks
+        run: composer test:types
+
   test:
+    needs: quality
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -61,4 +103,4 @@ jobs:
           composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
 
       - name: Run tests
-        run: composer test
+        run: composer test:unit
