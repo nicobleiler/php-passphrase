@@ -1,42 +1,58 @@
 name: Run Tests
 
 on:
-    workflow_call:
-    push:
-        branches: [dev]
-    pull_request:
-        branches: [dev, alpha, beta, master]
+  workflow_call:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev, alpha, beta, master]
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        php: ["8.2", "8.3", "8.4", "8.5"]
+        laravel: ["11", "12"]
+        exclude:
+          - php: 8.5
+            laravel: 11
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+    name: PPHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.os }}
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: "8.5"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
 
-            - name: Cache Composer dependencies
-              uses: actions/cache@v5
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-            - name: Validate composer files
-              run: composer validate --strict
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-
 
-            - name: Install dependencies
-              run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Validate composer files
+        run: composer validate --strict
 
-            - name: Run tests
-              run: composer test --parallel
+      - name: Install dependencies
+        run: |
+          composer remove --dev --no-update genphrase/genphrase martbock/laravel-diceware phpbench/phpbench
+          composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
+
+      - name: Run tests
+        run: composer test
