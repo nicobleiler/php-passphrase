@@ -120,16 +120,6 @@ class WordListTest extends TestCase
         }
     }
 
-    public function test_random_word_returns_word_from_list(): void
-    {
-        $words = ['alpha', 'bravo', 'charlie'];
-        $wordList = WordList::fromArray($words);
-
-        for ($i = 0; $i < 50; $i++) {
-            $this->assertContains($wordList->randomWord(), $words);
-        }
-    }
-
     public function test_custom_word_list_file(): void
     {
         $tmpFile = tempnam(sys_get_temp_dir(), 'custom_wl_');

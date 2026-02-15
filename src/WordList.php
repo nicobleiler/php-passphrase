@@ -34,13 +34,13 @@ class WordList
 
         $compiledPath = self::effCompiledWordListPath();
 
-        if (! file_exists($compiledPath)) {
+        if (!file_exists($compiledPath)) {
             throw WordListException::fileNotFound($compiledPath);
         }
 
         $words = require $compiledPath;
 
-        if (! is_array($words) || $words === []) {
+        if (!is_array($words) || $words === []) {
             throw WordListException::empty();
         }
 
@@ -58,7 +58,7 @@ class WordList
      */
     public static function fromFile(string $path): self
     {
-        if (! file_exists($path) || ! is_readable($path)) {
+        if (!file_exists($path) || !is_readable($path)) {
             throw WordListException::fileNotFound($path);
         }
 
@@ -134,20 +134,12 @@ class WordList
         }
 
         foreach ($words as $word) {
-            if (! is_string($word)) {
+            if (!is_string($word)) {
                 throw WordListException::invalidType();
             }
         }
 
         return new self($words);
-    }
-
-    /**
-     * Get a random word from the list.
-     */
-    public function randomWord(): string
-    {
-        return $this->words[random_int(0, $this->count() - 1)];
     }
 
     /**
