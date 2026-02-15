@@ -51,80 +51,6 @@ class WordList
     }
 
     /**
-     * Load a word list from a file.
-     *
-     * Supports two formats:
-     * - One word per line
-     * - EFF format: numeric index, whitespace, then word (e.g. "11111\tabacus")
-     */
-    public static function fromFile(string $path): self
-    {
-        if (! file_exists($path) || ! is_readable($path)) {
-            throw WordListException::fileNotFound($path);
-        }
-
-        $contents = file_get_contents($path);
-        if ($contents === false) {
-            throw WordListException::fileNotFound($path);
-        }
-
-        $lines = preg_split('/\r?\n/', trim($contents));
-        if ($lines === false || $lines === []) {
-            throw WordListException::empty();
-        }
-
-        $words = [];
-        $firstNonEmptyLine = '';
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line !== '') {
-                $firstNonEmptyLine = $line;
-                break;
-            }
-        }
-
-        if ($firstNonEmptyLine === '') {
-            throw WordListException::empty();
-        }
-
-        $firstWhitespacePos = strcspn($firstNonEmptyLine, " \t");
-        $isDiceWareFormat = $firstWhitespacePos > 0
-            && $firstWhitespacePos < strlen($firstNonEmptyLine)
-            && ctype_digit(substr($firstNonEmptyLine, 0, $firstWhitespacePos));
-
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '') {
-                continue;
-            }
-
-            if ($isDiceWareFormat) {
-                $whitespacePos = strcspn($line, " \t");
-
-                if ($whitespacePos > 0 && $whitespacePos < strlen($line)) {
-                    $diceKey = substr($line, 0, $whitespacePos);
-                    if (ctype_digit($diceKey)) {
-                        $word = ltrim(substr($line, $whitespacePos));
-                        if ($word !== '') {
-                            $words[] = $word;
-
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            $words[] = $line;
-        }
-
-        if ($words === []) {
-            throw WordListException::empty();
-        }
-
-        return new self($words);
-    }
-
-    /**
      * Create a word list from an array of words.
      *
      * @param  string[]  $words
@@ -165,13 +91,7 @@ class WordList
      */
     public function count(): int
     {
-        if ($this->wordCount !== null) {
-            return $this->wordCount;
-        }
-
-        $this->wordCount = count($this->words);
-
-        return $this->wordCount;
+        return $this->wordCount ??= count($this->words);
     }
 
     /**

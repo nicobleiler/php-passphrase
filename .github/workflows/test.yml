@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-php-8.4-quality-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php-8.4-quality-${{ hashFiles('**/composer.json') }}
           restore-keys: |
             ${{ runner.os }}-php-8.4-quality-
 

@@ -82,6 +82,12 @@ class ProvidersBench
                 'kind' => 'baseline',
                 'entropy_bits' => 65.5,
             ];
+
+            yield 'Illuminate\\Support\\Str::password(10) (default options, ~64.6 bits)' => [
+                'provider' => 'illuminate-str-password',
+                'kind' => 'baseline',
+                'entropy_bits' => 64.6,
+            ];
         }
     }
 
@@ -94,6 +100,7 @@ class ProvidersBench
             'laravel-diceware' => $this->laravelDicewareGenerator(),
             'random-bytes' => static fn (): string => bin2hex(random_bytes(8)),
             'illuminate-str-random' => static fn (): string => Str::random(11),
+            'illuminate-str-password' => static fn (): string => Str::password(10),
             default => throw new RuntimeException(sprintf('Unknown benchmark provider: %s', $provider)),
         };
     }

@@ -71,69 +71,13 @@ class WordListTest extends TestCase
         WordList::fromArray([]);
     }
 
-    public function test_from_file_not_found_throws(): void
+    public function test_custom_word_list_array(): void
     {
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list file not found');
-        WordList::fromFile('/nonexistent/path/to/wordlist.txt');
-    }
-
-    public function test_from_file_plain_format(): void
-    {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'wl_');
-        file_put_contents($tmpFile, "apple\nbanana\ncherry\n");
-
-        try {
-            $wordList = WordList::fromFile($tmpFile);
-            $this->assertSame(3, $wordList->count());
-            $this->assertSame('apple', $wordList->wordAt(0));
-            $this->assertSame('cherry', $wordList->wordAt(2));
-        } finally {
-            unlink($tmpFile);
-        }
-    }
-
-    public function test_from_file_eff_format(): void
-    {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'wl_');
-        file_put_contents($tmpFile, "11111\tabacus\n11112\tabdomen\n11113\tabdominal\n");
-
-        try {
-            $wordList = WordList::fromFile($tmpFile);
-            $this->assertSame(3, $wordList->count());
-            $this->assertSame('abacus', $wordList->wordAt(0));
-            $this->assertSame('abdominal', $wordList->wordAt(2));
-        } finally {
-            unlink($tmpFile);
-        }
-    }
-
-    public function test_from_file_ignores_blank_lines(): void
-    {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'wl_');
-        file_put_contents($tmpFile, "apple\n\nbanana\n\n\ncherry\n");
-
-        try {
-            $wordList = WordList::fromFile($tmpFile);
-            $this->assertSame(3, $wordList->count());
-        } finally {
-            unlink($tmpFile);
-        }
-    }
-
-    public function test_custom_word_list_file(): void
-    {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'custom_wl_');
         $customWords = ['correct', 'horse', 'battery', 'staple'];
-        file_put_contents($tmpFile, implode("\n", $customWords));
+        $wordList = WordList::fromArray($customWords);
 
-        try {
-            $wordList = WordList::fromFile($tmpFile);
-            $this->assertSame(4, $wordList->count());
-            $this->assertSame($customWords, $wordList->all());
-        } finally {
-            unlink($tmpFile);
-        }
+        $this->assertSame(4, $wordList->count());
+        $this->assertSame($customWords, $wordList->all());
     }
 
     public function test_word_at_negative_index_throws(): void

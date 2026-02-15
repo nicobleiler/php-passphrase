@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase;
 
 use Illuminate\Support\ServiceProvider;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 
 class PassphraseServiceProvider extends ServiceProvider
 {
@@ -13,10 +14,14 @@ class PassphraseServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/passphrase.php', 'passphrase');
 
         $this->app->singleton(WordList::class, function (): \NicoBleiler\Passphrase\WordList {
-            $path = config('passphrase.word_list_path');
+            $wordList = config('passphrase.word_list');
 
-            if ($path !== null) {
-                return WordList::fromFile($path);
+            if ($wordList !== null) {
+                if (! is_array($wordList)) {
+                    throw WordListException::invalidConfigType();
+                }
+
+                return WordList::fromArray($wordList);
             }
 
             return WordList::eff();
@@ -26,10 +31,10 @@ class PassphraseServiceProvider extends ServiceProvider
             $generator = new PassphraseGenerator($app->make(WordList::class));
 
             $generator->setDefaults(
-                numWords: (int) config('passphrase.num_words', 3),
-                wordSeparator: (string) config('passphrase.word_separator', '-'),
-                capitalize: (bool) config('passphrase.capitalize', false),
-                includeNumber: (bool) config('passphrase.include_number', false),
+                numWords: (int) config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS),
+                wordSeparator: (string) config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR),
+                capitalize: (bool) config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE),
+                includeNumber: (bool) config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER),
             );
 
             return $generator;

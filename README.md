@@ -137,8 +137,8 @@ return [
     'include_number'  => false,
 
     // null = bundled EFF long word list (7,776 words)
-    // Or set an absolute path to your own word list file
-    'word_list_path'  => null,
+    // Or provide your own word list as a PHP array of strings
+    'word_list'       => null,
 ];
 ```
 
@@ -148,11 +148,30 @@ These config values are automatically used as defaults when calling `Passphrase:
 
 ### Via Config (Laravel)
 
-Point `word_list_path` to any text file — one word per line, or EFF format (`12345\tword`):
+Provide `word_list` as a PHP array of strings:
 
 ```php
 // config/passphrase.php
-'word_list_path' => resource_path('wordlists/my-custom-list.txt'),
+'word_list' => ['correct', 'horse', 'battery', 'staple'],
+```
+
+Or load it from a dedicated PHP file:
+
+```php
+// config/passphrase.php
+'word_list' => require base_path('config/custom_word_list.php'),
+```
+
+```php
+// config/custom_word_list.php
+<?php
+
+return [
+    'correct',
+    'horse',
+    'battery',
+    'staple',
+];
 ```
 
 ### Programmatically
@@ -160,9 +179,6 @@ Point `word_list_path` to any text file — one word per line, or EFF format (`1
 ```php
 use NicoBleiler\Passphrase\WordList;
 use NicoBleiler\Passphrase\PassphraseGenerator;
-
-// From a file (plain or EFF format)
-$wordList = WordList::fromFile('/path/to/wordlist.txt');
 
 // From an array
 $wordList = WordList::fromArray(['correct', 'horse', 'battery', 'staple']);

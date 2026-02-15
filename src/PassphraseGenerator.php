@@ -14,15 +14,23 @@ class PassphraseGenerator
 
     public const MAXIMUM_NUM_WORDS = 20;
 
+    public const DEFAULT_NUM_WORDS = 3;
+
+    public const DEFAULT_WORD_SEPARATOR = '-';
+
+    public const DEFAULT_CAPITALIZE = false;
+
+    public const DEFAULT_INCLUDE_NUMBER = false;
+
     private WordList $wordList;
 
-    private int $defaultNumWords = 3;
+    private int $defaultNumWords = self::DEFAULT_NUM_WORDS;
 
-    private string $defaultWordSeparator = '-';
+    private string $defaultWordSeparator = self::DEFAULT_WORD_SEPARATOR;
 
-    private bool $defaultCapitalize = false;
+    private bool $defaultCapitalize = self::DEFAULT_CAPITALIZE;
 
-    private bool $defaultIncludeNumber = false;
+    private bool $defaultIncludeNumber = self::DEFAULT_INCLUDE_NUMBER;
 
     /**
      * @param  Randomizer  $randomizer
@@ -41,10 +49,10 @@ class PassphraseGenerator
      * In Laravel, the service provider calls this with values from config/passphrase.php.
      */
     public function setDefaults(
-        int $numWords = 3,
-        string $wordSeparator = '-',
-        bool $capitalize = false,
-        bool $includeNumber = false,
+        int $numWords = self::DEFAULT_NUM_WORDS,
+        string $wordSeparator = self::DEFAULT_WORD_SEPARATOR,
+        bool $capitalize = self::DEFAULT_CAPITALIZE,
+        bool $includeNumber = self::DEFAULT_INCLUDE_NUMBER,
     ): self {
         $this->validateNumWords($numWords);
 
@@ -117,7 +125,13 @@ class PassphraseGenerator
      */
     private function includeNumberInWords(array &$words): void
     {
-        $max = count($words) - 1;
+        $wordCount = count($words);
+
+        if ($wordCount === 0) {
+            return;
+        }
+
+        $max = $wordCount - 1;
         $index = $this->randomizer->getInt(0, $max);
         $digit = $this->randomizer->getInt(0, 9);
         $words[$index] .= (string) $digit;

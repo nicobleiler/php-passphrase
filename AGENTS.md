@@ -14,7 +14,7 @@ Guidance for AI/coding agents working in this repository.
 
 - `src/` — Core library code
   - `PassphraseGenerator.php` — main generation logic
-  - `WordList.php` — word list parsing/loading
+  - `WordList.php` — word list loading/validation
   - `PassphraseServiceProvider.php` — Laravel service wiring
   - `Facades/Passphrase.php` — Laravel facade
   - `Exceptions/` — package-specific exception types
@@ -52,12 +52,12 @@ Agents should run tests after meaningful changes, especially for behavior update
   - separator behavior (including multibyte)
   - capitalization behavior (including Unicode)
   - optional number insertion behavior
-  - EFF/custom word list parsing behavior
+  - EFF/custom word list array behavior
 
 ## Word List & Security Notes
 
 - Default behavior relies on the bundled EFF long list.
-- Support both plain one-word-per-line lists and EFF-style `dice\tword` format.
+- Custom word lists are provided as PHP arrays (config `word_list` or `WordList::fromArray()`).
 - Do not add logging/output that could leak generated passphrases.
 
 ## Laravel Integration Notes

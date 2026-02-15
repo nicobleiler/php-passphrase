@@ -164,7 +164,7 @@ class PassphraseGeneratorTest extends TestCase
         $this->assertCount(3, $words);
 
         // Exactly one word should end with a digit
-        $wordsWithDigit = array_filter($words, fn ($w): int|false => preg_match('/\d$/', (string) $w));
+        $wordsWithDigit = array_filter($words, fn ($w): bool => (bool) preg_match('/\d$/', (string) $w));
         $this->assertCount(1, $wordsWithDigit);
     }
 
@@ -253,7 +253,7 @@ class PassphraseGeneratorTest extends TestCase
         }
 
         // Exactly one word should end with a digit
-        $wordsWithDigit = array_filter($parts, fn ($p): int|false => preg_match('/\d$/', (string) $p));
+        $wordsWithDigit = array_filter($parts, fn ($p): bool => (bool) preg_match('/\d$/', (string) $p));
         $this->assertCount(1, $wordsWithDigit);
     }
 
