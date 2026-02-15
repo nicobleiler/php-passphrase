@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: ${{ fromJSON(github.ref_name == 'master' && '["ubuntu-22.04", "windows-2022"]' || '["ubuntu-22.04"]') }}
         php: ["8.2", "8.3", "8.4", "8.5"]
         laravel: ["11", "12"]
         exclude:
