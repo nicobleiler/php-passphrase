@@ -23,7 +23,7 @@
     },
     "require-dev": {
         "orchestra/testbench": "^9.0 || ^10.0",
-        "phpunit/phpunit": "^11.4 || ^12.0",
+        "phpunit/phpunit": "^11.4 || ^12.0 || ^13.0",
         "genphrase/genphrase": "^1.2.1",
         "martbock/laravel-diceware": "^2.1.0",
         "phpbench/phpbench": "^1.4.3"
