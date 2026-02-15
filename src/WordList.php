@@ -29,9 +29,11 @@ class WordList
     {
         static $cachedEff = null;
 
-        if ($cachedEff instanceof self) {
-            return $cachedEff;
-        }
+        return $cachedEff ??= self::loadBundledEff();
+    }
+
+    private static function loadBundledEff(): self
+    {
 
         $compiledPath = self::effCompiledWordListPath();
 
@@ -45,9 +47,7 @@ class WordList
             throw WordListException::empty();
         }
 
-        $cachedEff = self::fromArray($words);
-
-        return $cachedEff;
+        return self::fromArray($words);
     }
 
     /**
