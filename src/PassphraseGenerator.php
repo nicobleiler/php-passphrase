@@ -114,7 +114,8 @@ class PassphraseGenerator
      */
     private function includeNumberInWords(array &$words): void
     {
-        $index = $this->randomizer->getInt(0, count($words) - 1);
+        $max = count($words) - 1;
+        $index = $this->randomizer->getInt(0, $max);
         $digit = $this->randomizer->getInt(0, 9);
         $words[$index] .= (string) $digit;
     }
@@ -131,6 +132,7 @@ class PassphraseGenerator
         foreach ($words as &$word) {
             $word = self::capitalizeFirstLetter($word);
         }
+        unset($word);
     }
 
     /**

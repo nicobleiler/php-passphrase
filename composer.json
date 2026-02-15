@@ -18,7 +18,8 @@
         }
     ],
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "ext-mbstring": "*"
     },
     "require-dev": {
         "orchestra/testbench": "^10.9.0",
