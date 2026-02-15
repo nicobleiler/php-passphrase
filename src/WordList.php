@@ -165,13 +165,7 @@ class WordList
      */
     public function count(): int
     {
-        if ($this->wordCount !== null) {
-            return $this->wordCount;
-        }
-
-        $this->wordCount = count($this->words);
-
-        return $this->wordCount;
+        return $this->wordCount ??= count($this->words);
     }
 
     /**
