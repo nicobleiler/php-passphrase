@@ -57,15 +57,23 @@ class PassphraseGeneratorTest extends TestCase
     public function test_minimum_num_words(): void
     {
         $this->expectException(InvalidNumWordsException::class);
-        $this->expectExceptionMessage("'num_words' must be between 3 and 20");
-        $this->generator->generate(numWords: 2);
+        $this->expectExceptionMessage(sprintf(
+            "'num_words' must be between %d and %d",
+            PassphraseGenerator::MINIMUM_NUM_WORDS,
+            PassphraseGenerator::MAXIMUM_NUM_WORDS,
+        ));
+        $this->generator->generate(numWords: PassphraseGenerator::MINIMUM_NUM_WORDS - 1);
     }
 
     public function test_maximum_num_words(): void
     {
         $this->expectException(InvalidNumWordsException::class);
-        $this->expectExceptionMessage("'num_words' must be between 3 and 20");
-        $this->generator->generate(numWords: 21);
+        $this->expectExceptionMessage(sprintf(
+            "'num_words' must be between %d and %d",
+            PassphraseGenerator::MINIMUM_NUM_WORDS,
+            PassphraseGenerator::MAXIMUM_NUM_WORDS,
+        ));
+        $this->generator->generate(numWords: PassphraseGenerator::MAXIMUM_NUM_WORDS + 1);
     }
 
     public function test_zero_num_words(): void
@@ -76,16 +84,16 @@ class PassphraseGeneratorTest extends TestCase
 
     public function test_boundary_minimum_num_words_valid(): void
     {
-        $result = $this->generator->generate(numWords: 3);
+        $result = $this->generator->generate(numWords: PassphraseGenerator::MINIMUM_NUM_WORDS);
         $words = explode('-', $result);
-        $this->assertCount(3, $words);
+        $this->assertCount(PassphraseGenerator::MINIMUM_NUM_WORDS, $words);
     }
 
     public function test_boundary_maximum_num_words_valid(): void
     {
-        $result = $this->generator->generate(numWords: 20);
+        $result = $this->generator->generate(numWords: PassphraseGenerator::MAXIMUM_NUM_WORDS);
         $words = explode('-', $result);
-        $this->assertCount(20, $words);
+        $this->assertCount(PassphraseGenerator::MAXIMUM_NUM_WORDS, $words);
     }
 
     // -------------------------------------------------------
@@ -316,7 +324,7 @@ class PassphraseGeneratorTest extends TestCase
         }
 
         // Exactly one word should end with a digit
-        $wordsWithDigit = array_filter($parts, fn ($p) => preg_match('/\d$/', $p));
+        $wordsWithDigit = array_filter($parts, fn($p) => preg_match('/\d$/', $p));
         $this->assertCount(1, $wordsWithDigit);
     }
 
@@ -449,6 +457,14 @@ class PassphraseGeneratorTest extends TestCase
         $generator = new PassphraseGenerator();
         $result = $generator->setDefaults();
         $this->assertSame($generator, $result);
+    }
+
+    public function test_set_defaults_validates_num_words(): void
+    {
+        $generator = new PassphraseGenerator();
+
+        $this->expectException(InvalidNumWordsException::class);
+        $generator->setDefaults(numWords: PassphraseGenerator::MINIMUM_NUM_WORDS - 1);
     }
 
     // -------------------------------------------------------

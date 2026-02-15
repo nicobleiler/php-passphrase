@@ -34,6 +34,8 @@ class PassphraseGenerator
         bool $capitalize = false,
         bool $includeNumber = false,
     ): self {
+        $this->validateNumWords($numWords);
+
         $this->defaultNumWords = $numWords;
         $this->defaultWordSeparator = $wordSeparator;
         $this->defaultCapitalize = $capitalize;
