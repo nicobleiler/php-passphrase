@@ -52,12 +52,21 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
         "analyse": "phpstan analyse --no-progress --memory-limit=1G",
         "lint": [
             "pint",
-            "rector",
-            "@analyse"
+            "rector"
+        ],
+        "test:lint": [
+            "pint --test",
+            "rector --dry-run"
+        ],
+        "test:unit": "vendor/bin/phpunit",
+        "test:types": "phpstan",
+        "test": [
+            "@test:lint",
+            "@test:unit",
+            "@test:types"
         ],
         "bench": "vendor/bin/phpbench run --report=providers",
         "bench:baseline": "vendor/bin/phpbench run --tag=baseline --report=providers",
