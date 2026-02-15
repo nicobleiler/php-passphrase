@@ -74,6 +74,39 @@ class LaravelIntegrationTest extends TestCase
         $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
     }
 
+    public function test_custom_word_list_can_be_loaded_via_require_file(): void
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'custom_wl_');
+        file_put_contents(
+            $tmpFile,
+            <<<'PHP'
+                <?php
+
+                return [
+                    'correct',
+                    'horse',
+                    'battery',
+                    'staple',
+                ];
+            PHP
+        );
+
+        try {
+            config(['passphrase.word_list' => require $tmpFile]);
+
+            // Re-register to pick up new config
+            $this->app->forgetInstance(WordList::class);
+            $this->app->forgetInstance(PassphraseGenerator::class);
+            (new PassphraseServiceProvider($this->app))->register();
+
+            $wordList = $this->app->make(WordList::class);
+            $this->assertSame(4, $wordList->count());
+            $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
+        } finally {
+            unlink($tmpFile);
+        }
+    }
+
     public function test_config_defaults_are_applied_to_generator(): void
     {
         config([
