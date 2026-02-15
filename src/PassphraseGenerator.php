@@ -156,7 +156,7 @@ class PassphraseGenerator
     /**
      * Capitalize the first letter of a string.
      *
-     * Handles multibyte characters correctly (like Bitwarden's implementation).
+     * Handles multibyte characters correctly.
      */
     public static function capitalizeFirstLetter(string $s): string
     {
