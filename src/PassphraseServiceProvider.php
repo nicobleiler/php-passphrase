@@ -31,10 +31,10 @@ class PassphraseServiceProvider extends ServiceProvider
             $generator = new PassphraseGenerator($app->make(WordList::class));
 
             $generator->setDefaults(
-                numWords: (int) config('passphrase.num_words', 3),
-                wordSeparator: (string) config('passphrase.word_separator', '-'),
-                capitalize: (bool) config('passphrase.capitalize', false),
-                includeNumber: (bool) config('passphrase.include_number', false),
+                numWords: (int) config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS),
+                wordSeparator: (string) config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR),
+                capitalize: (bool) config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE),
+                includeNumber: (bool) config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER),
             );
 
             return $generator;

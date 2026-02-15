@@ -54,10 +54,10 @@ class LaravelIntegrationTest extends TestCase
 
     public function test_config_defaults(): void
     {
-        $this->assertSame(3, config('passphrase.num_words'));
-        $this->assertSame('-', config('passphrase.word_separator'));
-        $this->assertFalse(config('passphrase.capitalize'));
-        $this->assertFalse(config('passphrase.include_number'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_NUM_WORDS, config('passphrase.num_words'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_WORD_SEPARATOR, config('passphrase.word_separator'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_CAPITALIZE, config('passphrase.capitalize'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_INCLUDE_NUMBER, config('passphrase.include_number'));
         $this->assertNull(config('passphrase.word_list'));
     }
 
