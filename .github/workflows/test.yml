@@ -23,7 +23,7 @@ jobs:
           - php: 8.5
             laravel: 11
 
-    name: PPHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.os }}
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
