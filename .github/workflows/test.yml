@@ -85,6 +85,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+          extensions: mbstring, fileinfo
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -103,7 +104,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer remove --dev --no-update genphrase/genphrase martbock/laravel-diceware phpbench/phpbench
           composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
 
       - name: Run tests

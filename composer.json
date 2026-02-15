@@ -27,8 +27,6 @@
         "phpstan/phpstan": "^2.1",
         "laravel/pint": "^1.27",
         "rector/rector": "^2.3",
-        "genphrase/genphrase": "^1.2.1",
-        "martbock/laravel-diceware": "^2.1.0",
         "phpbench/phpbench": "^1.4.3"
     },
     "autoload": {
