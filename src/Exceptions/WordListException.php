@@ -8,6 +8,11 @@ use RuntimeException;
 
 class WordListException extends RuntimeException
 {
+    public static function invalidConfigType(): self
+    {
+        return new self('Word list config must be an array of strings');
+    }
+
     public static function fileNotFound(string $path): self
     {
         return new self("Word list file not found: {$path}");

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Tests;
 
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\Facades\Passphrase;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\PassphraseServiceProvider;
@@ -105,6 +106,19 @@ class LaravelIntegrationTest extends TestCase
         } finally {
             unlink($tmpFile);
         }
+    }
+
+    public function test_non_array_word_list_config_throws_clear_message(): void
+    {
+        config(['passphrase.word_list' => '/path/to/list.php']);
+
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
+
+        $this->expectExceptionObject(WordListException::invalidConfigType());
+
+        $this->app->make(WordList::class);
     }
 
     public function test_config_defaults_are_applied_to_generator(): void

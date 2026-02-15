@@ -18,7 +18,7 @@ class PassphraseServiceProvider extends ServiceProvider
 
             if ($wordList !== null) {
                 if (! is_array($wordList)) {
-                    throw WordListException::invalidType();
+                    throw WordListException::invalidConfigType();
                 }
 
                 return WordList::fromArray($wordList);
