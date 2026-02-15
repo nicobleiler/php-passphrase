@@ -18,8 +18,8 @@ class WordListException extends RuntimeException
         return new self('Word list is empty');
     }
 
-    public static function tooSmall(int $count, int $minimum): self
+    public static function invalidType(): self
     {
-        return new self("Word list must contain at least {$minimum} words, got {$count}");
+        return new self('Word list must contain only strings');
     }
 }

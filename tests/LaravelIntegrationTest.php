@@ -80,4 +80,48 @@ class LaravelIntegrationTest extends TestCase
             unlink($tmpFile);
         }
     }
+
+    public function test_config_defaults_are_applied_to_generator(): void
+    {
+        config([
+            'passphrase.num_words' => 5,
+            'passphrase.word_separator' => '.',
+            'passphrase.capitalize' => true,
+            'passphrase.include_number' => false,
+        ]);
+
+        // Re-register to pick up new config
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
+
+        $result = Passphrase::generate();
+        $words = explode('.', $result);
+
+        $this->assertCount(5, $words);
+        foreach ($words as $word) {
+            $cleaned = rtrim($word, '0123456789');
+            if ($cleaned !== '') {
+                $first = mb_substr($cleaned, 0, 1);
+                $this->assertSame(mb_strtoupper($first), $first, "Expected '{$word}' to be capitalized");
+            }
+        }
+    }
+
+    public function test_config_include_number_is_applied(): void
+    {
+        config([
+            'passphrase.num_words' => 3,
+            'passphrase.word_separator' => '-',
+            'passphrase.capitalize' => false,
+            'passphrase.include_number' => true,
+        ]);
+
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
+
+        $result = Passphrase::generate();
+        $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
+    }
 }

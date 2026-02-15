@@ -1,42 +1,110 @@
 name: Run Tests
 
 on:
-    workflow_call:
-    push:
-        branches: [dev]
-    pull_request:
-        branches: [dev, alpha, beta, master]
+  workflow_call:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev, alpha, beta, master]
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
+  quality:
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+    name: Quality checks (lint + types)
 
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: "8.5"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
 
-            - name: Cache Composer dependencies
-              uses: actions/cache@v5
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-composer-
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-            - name: Validate composer files
-              run: composer validate --strict
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-8.4-quality-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.4-quality-
 
-            - name: Install dependencies
-              run: composer install --no-progress --prefer-dist --optimize-autoloader
+      - name: Validate composer files
+        run: composer validate --strict
 
-            - name: Run tests
-              run: composer test --parallel
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run lint checks
+        run: composer test:lint
+
+      - name: Run type checks
+        run: composer test:types
+
+  test:
+    needs: quality
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(github.ref_name == 'master' && '["ubuntu-22.04", "windows-2022"]' || '["ubuntu-22.04"]') }}
+        php: ["8.2", "8.3", "8.4", "8.5"]
+        laravel: ["11", "12"]
+        exclude:
+          - php: 8.4
+            laravel: 11
+          - php: 8.5
+            laravel: 11
+          - php: 8.2
+            laravel: 12
+          - php: 8.3
+            laravel: 12
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-
+
+      - name: Validate composer files
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: |
+          composer remove --dev --no-update genphrase/genphrase martbock/laravel-diceware phpbench/phpbench
+          composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
+
+      - name: Run tests
+        run: composer test:unit

@@ -101,7 +101,7 @@ class ProvidersBench
     /** @return callable():string */
     private function phpPassphraseGenerator(): callable
     {
-        $generator = new PassphraseGenerator();
+        $generator = new PassphraseGenerator;
 
         return static fn (): string => $generator->generate(
             numWords: 5,
@@ -114,7 +114,7 @@ class ProvidersBench
     /** @return callable():string */
     private function genphraseGenerator(): callable
     {
-        $generator = new Password();
+        $generator = new Password;
         $generator->removeWordlist('default');
         $generator->addWordlist('diceware.lst', 'diceware');
         $generator->disableSeparators(true);
@@ -126,8 +126,8 @@ class ProvidersBench
     /** @return callable():string */
     private function laravelDicewareGenerator(): callable
     {
-        $container = new Container();
-        $container->instance('files', new Filesystem());
+        $container = new Container;
+        $container->instance('files', new Filesystem);
         Facade::setFacadeApplication($container);
 
         $generator = new WordGenerator([
