@@ -24,6 +24,7 @@
     "require-dev": {
         "orchestra/testbench": "^9.0 || ^10.0",
         "phpunit/phpunit": "^11.4 || ^12.0 || ^13.0",
+        "phpstan/phpstan": "^2.1",
         "laravel/pint": "^1.27",
         "rector/rector": "^2.3",
         "genphrase/genphrase": "^1.2.1",
@@ -52,9 +53,11 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
+        "analyse": "phpstan analyse --no-progress --memory-limit=1G",
         "lint": [
             "pint",
-            "rector"
+            "rector",
+            "@analyse"
         ],
         "bench": "vendor/bin/phpbench run --report=providers",
         "bench:baseline": "vendor/bin/phpbench run --tag=baseline --report=providers",
