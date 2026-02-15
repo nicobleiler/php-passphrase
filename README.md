@@ -70,14 +70,52 @@ $generator = new PassphraseGenerator();
 echo $generator->generate(); // "candle-rubber-glimpse"
 ```
 
+You can set instance-level defaults that apply whenever `generate()` is called without explicit parameters:
+
+```php
+$generator = new PassphraseGenerator();
+$generator->setDefaults(
+    numWords: 5,
+    wordSeparator: '.',
+    capitalize: true,
+    includeNumber: true,
+);
+
+echo $generator->generate(); // "Candle.Rubber3.Glimpse.Obtain.Willow"
+
+// Explicit params still override defaults
+echo $generator->generate(numWords: 3, wordSeparator: '-');
+```
+
+### Custom Randomizer
+
+By default, `PassphraseGenerator` uses PHP's cryptographically secure `Random\Engine\Secure`. You can inject a custom `Random\Randomizer` for deterministic output (e.g. testing, demos, reproducible benchmarks):
+
+```php
+use NicoBleiler\Passphrase\PassphraseGenerator;
+use Random\Engine\Xoshiro256StarStar;
+use Random\Randomizer;
+
+$generator = new PassphraseGenerator(
+    randomizer: new Randomizer(new Xoshiro256StarStar(12345)),
+);
+
+// Same seed always produces the same passphrase
+echo $generator->generate(); // deterministic output
+```
+
+> **Security note:** Only use non-secure engines for testing or demos. For real passphrase generation, always use the default `Secure` engine.
+
 ## Options
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `numWords` | `int` | `3` | Number of words (3–20) |
-| `wordSeparator` | `string` | `'-'` | Character(s) between words |
-| `capitalize` | `bool` | `false` | Capitalize the first letter of each word |
-| `includeNumber` | `bool` | `false` | Append a random digit (0–9) to one random word |
+| `numWords` | `?int` | `3` | Number of words (3–20). `null` uses instance/config default. |
+| `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
+| `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
+| `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |
+
+All parameters are nullable — passing `null` (or omitting them) uses the defaults set via `setDefaults()` or `config/passphrase.php` in Laravel.
 
 These match [Bitwarden's passphrase generator options](https://bitwarden.com/passphrase-generator/) exactly.
 
@@ -103,6 +141,8 @@ return [
     'word_list_path'  => null,
 ];
 ```
+
+These config values are automatically used as defaults when calling `Passphrase::generate()` without explicit parameters. You can still override any option per-call.
 
 ## Custom Word Lists
 
@@ -156,12 +196,12 @@ vendor/bin/phpunit
 The test suite includes tests modeled after Bitwarden's own test cases:
 
 - Validation (word count bounds)
-- Deterministic generation with seeded RNG
+- Deterministic generation with seeded `Xoshiro256StarStar` engine
 - Capitalize behavior (including Unicode)
 - Number inclusion
 - Separator handling (including multi-byte emoji)
 - EFF word list integrity
-- Laravel integration (service provider, facade, config)
+- Laravel integration (service provider, facade, config defaults)
   
 ## Performance (2026-02-14 02:41:47 MEZ)
 
@@ -242,6 +282,7 @@ composer bench:compare
 ## Requirements
 
 - PHP 8.2+
+- `ext-mbstring` (for multibyte/Unicode capitalization support)
 - Laravel 11+ *(optional, for Laravel integration)*
 
 ## License

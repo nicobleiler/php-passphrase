@@ -19,7 +19,7 @@ Guidance for AI/coding agents working in this repository.
   - `Facades/Passphrase.php` — Laravel facade
   - `Exceptions/` — package-specific exception types
 - `config/passphrase.php` — publishable Laravel config defaults
-- `resources/wordlists/eff_large_wordlist.txt` — bundled default word list
+- `resources/wordlists/eff_large_wordlist.php` — bundled default word list (compiled PHP array)
 - `tests/` — PHPUnit tests (unit + Laravel integration via Testbench)
 
 ## Setup & Validation
@@ -40,11 +40,13 @@ Agents should run tests after meaningful changes, especially for behavior update
 - Avoid introducing framework-specific coupling in core classes unless change is Laravel integration related.
 - Keep error handling explicit with package exception types where appropriate.
 - Maintain compatibility with PHP 8.2.
+- `PassphraseGenerator` uses `Random\Randomizer` (default: `Random\Engine\Secure`) for all randomness. Do not use `random_int()` directly.
+- The `Randomizer` is injected via constructor for testability. Do not add separate RNG-callable methods.
 
 ## Testing Guidelines
 
 - Add/adjust tests in `tests/` for any behavioral change.
-- Keep deterministic tests deterministic (seeded randomness patterns where already used).
+- Deterministic tests inject a seeded `Random\Randomizer` (using `Xoshiro256StarStar` engine) via the constructor. Do not use custom callable RNG patterns.
 - Validate edge cases already reflected by the suite:
   - word-count bounds
   - separator behavior (including multibyte)
@@ -61,6 +63,8 @@ Agents should run tests after meaningful changes, especially for behavior update
 ## Laravel Integration Notes
 
 - Keep service provider bindings/facade alias behavior intact.
+- The service provider wires `config/passphrase.php` values into `PassphraseGenerator::setDefaults()`.
+- `Passphrase::generate()` without arguments uses config defaults; explicit params override them.
 - If config keys change, update tests and docs consistently.
 
 ## Documentation Expectations
