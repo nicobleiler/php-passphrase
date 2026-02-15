@@ -21,7 +21,7 @@ class WordListTest extends TestCase
 
         $this->assertIsArray($words);
         $this->assertNotEmpty($words);
-        $this->assertContainsOnly('string', $words);
+        $this->assertContainsOnlyString($words);
         $this->assertSame(7776, count($words));
         $this->assertSame('abacus', $words[0]);
         $this->assertSame('zoom', $words[count($words) - 1]);
@@ -143,5 +143,28 @@ class WordListTest extends TestCase
         } finally {
             unlink($tmpFile);
         }
+    }
+
+    public function test_word_at_negative_index_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectException(\OutOfRangeException::class);
+        $wordList->wordAt(-1);
+    }
+
+    public function test_word_at_out_of_bounds_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectException(\OutOfRangeException::class);
+        $wordList->wordAt(2);
+    }
+
+    public function test_from_array_non_string_throws(): void
+    {
+        $this->expectException(WordListException::class);
+        $this->expectExceptionMessage('Word list must contain only strings');
+        WordList::fromArray([42, 'hello']); // @phpstan-ignore argument.type
     }
 }

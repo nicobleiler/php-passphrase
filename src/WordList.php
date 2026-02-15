@@ -33,7 +33,16 @@ class WordList
         }
 
         $compiledPath = self::effCompiledWordListPath();
+
+        if (! file_exists($compiledPath)) {
+            throw WordListException::fileNotFound($compiledPath);
+        }
+
         $words = require $compiledPath;
+
+        if (! is_array($words) || $words === []) {
+            throw WordListException::empty();
+        }
 
         $cachedEff = self::fromArray($words);
 
@@ -124,6 +133,12 @@ class WordList
             throw WordListException::empty();
         }
 
+        foreach ($words as $word) {
+            if (! is_string($word)) {
+                throw WordListException::invalidType();
+            }
+        }
+
         return new self($words);
     }
 
@@ -137,9 +152,17 @@ class WordList
 
     /**
      * Get the word at a specific index.
+     *
+     * @throws \OutOfRangeException If the index is out of bounds
      */
     public function wordAt(int $index): string
     {
+        if ($index < 0 || $index >= $this->count()) {
+            throw new \OutOfRangeException(
+                sprintf('Word index %d is out of range [0, %d)', $index, $this->count())
+            );
+        }
+
         return $this->words[$index];
     }
 
