@@ -1,10 +1,10 @@
-name: Run Tests
+name: Run Benchmarks
 
 on:
   workflow_call:
 
 jobs:
-  test:
+  benchmark:
     runs-on: ubuntu-latest
 
     steps:

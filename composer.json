@@ -18,11 +18,15 @@
         }
     ],
     "require": {
-        "php": "^8.2"
+        "php": "^8.2",
+        "ext-mbstring": "*"
     },
     "require-dev": {
-        "orchestra/testbench": "^10.9.0",
-        "phpunit/phpunit": "^12.5.11",
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "phpunit/phpunit": "^11.4 || ^12.0 || ^13.0",
+        "phpstan/phpstan": "^2.1",
+        "laravel/pint": "^1.27",
+        "rector/rector": "^2.3",
         "genphrase/genphrase": "^1.2.1",
         "martbock/laravel-diceware": "^2.1.0",
         "phpbench/phpbench": "^1.4.3"
@@ -48,7 +52,22 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit",
+        "analyse": "phpstan analyse --no-progress --memory-limit=1G",
+        "lint": [
+            "pint",
+            "rector"
+        ],
+        "test:lint": [
+            "pint --test",
+            "rector --dry-run"
+        ],
+        "test:unit": "vendor/bin/phpunit",
+        "test:types": "phpstan",
+        "test": [
+            "@test:lint",
+            "@test:unit",
+            "@test:types"
+        ],
         "bench": "vendor/bin/phpbench run --report=providers",
         "bench:baseline": "vendor/bin/phpbench run --tag=baseline --report=providers",
         "bench:compare": "vendor/bin/phpbench run --ref=baseline --report=providers"

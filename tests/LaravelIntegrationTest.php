@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Tests;
 
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\Facades\Passphrase;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\PassphraseServiceProvider;
@@ -12,11 +13,27 @@ use Orchestra\Testbench\TestCase;
 
 class LaravelIntegrationTest extends TestCase
 {
+    /**
+     * Re-register the provider to apply updated config bindings.
+     */
+    private function refreshServiceProvider(): void
+    {
+        $this->app->forgetInstance(WordList::class);
+        $this->app->forgetInstance(PassphraseGenerator::class);
+        (new PassphraseServiceProvider($this->app))->register();
+    }
+
+    /**
+     * Registers package providers for Testbench.
+     */
     protected function getPackageProviders($app): array
     {
         return [PassphraseServiceProvider::class];
     }
 
+    /**
+     * Registers package facade aliases for Testbench.
+     */
     protected function getPackageAliases($app): array
     {
         return [
@@ -53,25 +70,45 @@ class LaravelIntegrationTest extends TestCase
 
     public function test_config_defaults(): void
     {
-        $this->assertSame(3, config('passphrase.num_words'));
-        $this->assertSame('-', config('passphrase.word_separator'));
-        $this->assertFalse(config('passphrase.capitalize'));
-        $this->assertFalse(config('passphrase.include_number'));
-        $this->assertNull(config('passphrase.word_list_path'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_NUM_WORDS, config('passphrase.num_words'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_WORD_SEPARATOR, config('passphrase.word_separator'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_CAPITALIZE, config('passphrase.capitalize'));
+        $this->assertSame(PassphraseGenerator::DEFAULT_INCLUDE_NUMBER, config('passphrase.include_number'));
+        $this->assertNull(config('passphrase.word_list'));
     }
 
     public function test_custom_word_list_from_config(): void
     {
-        $tmpFile = tempnam(sys_get_temp_dir(), 'wl_');
-        file_put_contents($tmpFile, "correct\nhorse\nbattery\nstaple\n");
+        config(['passphrase.word_list' => ['correct', 'horse', 'battery', 'staple']]);
+
+        $this->refreshServiceProvider();
+
+        $wordList = $this->app->make(WordList::class);
+        $this->assertSame(4, $wordList->count());
+        $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
+    }
+
+    public function test_custom_word_list_can_be_loaded_via_require_file(): void
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'custom_wl_');
+        file_put_contents(
+            $tmpFile,
+            <<<'PHP'
+                <?php
+
+                return [
+                    'correct',
+                    'horse',
+                    'battery',
+                    'staple',
+                ];
+            PHP
+        );
 
         try {
-            config(['passphrase.word_list_path' => $tmpFile]);
+            config(['passphrase.word_list' => require $tmpFile]);
 
-            // Re-register to pick up new config
-            $this->app->forgetInstance(WordList::class);
-            $this->app->forgetInstance(PassphraseGenerator::class);
-            (new PassphraseServiceProvider($this->app))->register();
+            $this->refreshServiceProvider();
 
             $wordList = $this->app->make(WordList::class);
             $this->assertSame(4, $wordList->count());
@@ -79,5 +116,55 @@ class LaravelIntegrationTest extends TestCase
         } finally {
             unlink($tmpFile);
         }
+    }
+
+    public function test_non_array_word_list_config_throws_clear_message(): void
+    {
+        config(['passphrase.word_list' => '/path/to/list.php']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidConfigType());
+
+        $this->app->make(WordList::class);
+    }
+
+    public function test_config_defaults_are_applied_to_generator(): void
+    {
+        config([
+            'passphrase.num_words' => 5,
+            'passphrase.word_separator' => '.',
+            'passphrase.capitalize' => true,
+            'passphrase.include_number' => false,
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $result = Passphrase::generate();
+        $words = explode('.', $result);
+
+        $this->assertCount(5, $words);
+        foreach ($words as $word) {
+            $cleaned = rtrim($word, '0123456789');
+            if ($cleaned !== '') {
+                $first = mb_substr($cleaned, 0, 1);
+                $this->assertSame(mb_strtoupper($first), $first, "Expected '{$word}' to be capitalized");
+            }
+        }
+    }
+
+    public function test_config_include_number_is_applied(): void
+    {
+        config([
+            'passphrase.num_words' => 3,
+            'passphrase.word_separator' => '-',
+            'passphrase.capitalize' => false,
+            'passphrase.include_number' => true,
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $result = Passphrase::generate();
+        $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
     }
 }

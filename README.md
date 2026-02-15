@@ -1,5 +1,11 @@
 # PHP Passphrase Generator
 
+[![Latest Version](https://img.shields.io/packagist/v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![Downloads](https://img.shields.io/packagist/dt/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![PHP Version](https://img.shields.io/packagist/php-v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
+[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
+[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
+
 A Bitwarden-inspired passphrase generator for PHP with first-class Laravel integration.
 
 Generates secure, memorable passphrases using the [EFF long word list](https://www.eff.org/dice) (7,776 words) by default, with full support for custom word lists.
@@ -64,14 +70,52 @@ $generator = new PassphraseGenerator();
 echo $generator->generate(); // "candle-rubber-glimpse"
 ```
 
+You can set instance-level defaults that apply whenever `generate()` is called without explicit parameters:
+
+```php
+$generator = new PassphraseGenerator();
+$generator->setDefaults(
+    numWords: 5,
+    wordSeparator: '.',
+    capitalize: true,
+    includeNumber: true,
+);
+
+echo $generator->generate(); // "Candle.Rubber3.Glimpse.Obtain.Willow"
+
+// Explicit params still override defaults
+echo $generator->generate(numWords: 3, wordSeparator: '-');
+```
+
+### Custom Randomizer
+
+By default, `PassphraseGenerator` uses PHP's cryptographically secure `Random\Engine\Secure`. You can inject a custom `Random\Randomizer` for deterministic output (e.g. testing, demos, reproducible benchmarks):
+
+```php
+use NicoBleiler\Passphrase\PassphraseGenerator;
+use Random\Engine\Xoshiro256StarStar;
+use Random\Randomizer;
+
+$generator = new PassphraseGenerator(
+    randomizer: new Randomizer(new Xoshiro256StarStar(12345)),
+);
+
+// Same seed always produces the same passphrase
+echo $generator->generate(); // deterministic output
+```
+
+> **Security note:** Only use non-secure engines for testing or demos. For real passphrase generation, always use the default `Secure` engine.
+
 ## Options
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `numWords` | `int` | `3` | Number of words (3–20) |
-| `wordSeparator` | `string` | `'-'` | Character(s) between words |
-| `capitalize` | `bool` | `false` | Capitalize the first letter of each word |
-| `includeNumber` | `bool` | `false` | Append a random digit (0–9) to one random word |
+| `numWords` | `?int` | `3` | Number of words (3–20). `null` uses instance/config default. |
+| `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
+| `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
+| `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |
+
+All parameters are nullable — passing `null` (or omitting them) uses the defaults set via `setDefaults()` or `config/passphrase.php` in Laravel.
 
 These match [Bitwarden's passphrase generator options](https://bitwarden.com/passphrase-generator/) exactly.
 
@@ -93,20 +137,41 @@ return [
     'include_number'  => false,
 
     // null = bundled EFF long word list (7,776 words)
-    // Or set an absolute path to your own word list file
-    'word_list_path'  => null,
+    // Or provide your own word list as a PHP array of strings
+    'word_list'       => null,
 ];
 ```
+
+These config values are automatically used as defaults when calling `Passphrase::generate()` without explicit parameters. You can still override any option per-call.
 
 ## Custom Word Lists
 
 ### Via Config (Laravel)
 
-Point `word_list_path` to any text file — one word per line, or EFF format (`12345\tword`):
+Provide `word_list` as a PHP array of strings:
 
 ```php
 // config/passphrase.php
-'word_list_path' => resource_path('wordlists/my-custom-list.txt'),
+'word_list' => ['correct', 'horse', 'battery', 'staple'],
+```
+
+Or load it from a dedicated PHP file:
+
+```php
+// config/passphrase.php
+'word_list' => require base_path('config/custom_word_list.php'),
+```
+
+```php
+// config/custom_word_list.php
+<?php
+
+return [
+    'correct',
+    'horse',
+    'battery',
+    'staple',
+];
 ```
 
 ### Programmatically
@@ -114,9 +179,6 @@ Point `word_list_path` to any text file — one word per line, or EFF format (`1
 ```php
 use NicoBleiler\Passphrase\WordList;
 use NicoBleiler\Passphrase\PassphraseGenerator;
-
-// From a file (plain or EFF format)
-$wordList = WordList::fromFile('/path/to/wordlist.txt');
 
 // From an array
 $wordList = WordList::fromArray(['correct', 'horse', 'battery', 'staple']);
@@ -150,12 +212,12 @@ vendor/bin/phpunit
 The test suite includes tests modeled after Bitwarden's own test cases:
 
 - Validation (word count bounds)
-- Deterministic generation with seeded RNG
+- Deterministic generation with seeded `Xoshiro256StarStar` engine
 - Capitalize behavior (including Unicode)
 - Number inclusion
 - Separator handling (including multi-byte emoji)
 - EFF word list integrity
-- Laravel integration (service provider, facade, config)
+- Laravel integration (service provider, facade, config defaults)
   
 ## Performance (2026-02-14 02:41:47 MEZ)
 
@@ -236,6 +298,7 @@ composer bench:compare
 ## Requirements
 
 - PHP 8.2+
+- `ext-mbstring` (for multibyte/Unicode capitalization support)
 - Laravel 11+ *(optional, for Laravel integration)*
 
 ## License

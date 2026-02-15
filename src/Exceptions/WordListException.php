@@ -8,6 +8,11 @@ use RuntimeException;
 
 class WordListException extends RuntimeException
 {
+    public static function invalidConfigType(): self
+    {
+        return new self('Word list config must be an array of strings');
+    }
+
     public static function fileNotFound(string $path): self
     {
         return new self("Word list file not found: {$path}");
@@ -18,8 +23,8 @@ class WordListException extends RuntimeException
         return new self('Word list is empty');
     }
 
-    public static function tooSmall(int $count, int $minimum): self
+    public static function invalidType(): self
     {
-        return new self("Word list must contain at least {$minimum} words, got {$count}");
+        return new self('Word list must contain only strings');
     }
 }
