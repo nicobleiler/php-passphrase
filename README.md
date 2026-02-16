@@ -3,7 +3,8 @@
 [![Latest Version](https://img.shields.io/packagist/v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
 [![Downloads](https://img.shields.io/packagist/dt/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
 [![PHP Version](https://img.shields.io/packagist/php-v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
-[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
+[![Code Size](https://img.shields.io/github/languages/code-size/nicobleiler/php-passphrase)](https://github.com/nicobleiler/php-passphrase)
+[![Wordlist Size](https://img.shields.io/github/size/nicobleiler/php-passphrase/resources/wordlists/eff_large_wordlist.php?label=wordlist)](https://github.com/nicobleiler/php-passphrase/blob/master/resources/wordlists/eff_large_wordlist.php)[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
 [![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
 
 A Bitwarden-inspired passphrase generator for PHP with first-class Laravel integration.
@@ -267,7 +268,6 @@ In this run the available benchmark providers were: `php-passphrase`, `genphrase
 > **Note on cold runs:** `benchGenerateCold` includes setup and first-use initialization (autoloading, object construction, and initial word-list work). Cold-run `rstdev` is therefore expected to be higher and should be interpreted as startup-cost signal, not steady-state throughput.
 
 ```
-benchGenerateCold
 benchGenerateCold
 +----------------+--------------------------------------------------------------------+------+-----+-----------+-----------+----------+----------+
 | benchmark      | set                                                                | revs | its | mem_peak  | mode      | mean     | rstdev   |
