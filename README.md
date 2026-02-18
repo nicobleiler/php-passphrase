@@ -338,6 +338,47 @@ Optional providers can be added `composer require --dev genphrase/genphrase mart
 - `genphrase/genphrase` with a 65-bit target on diceware mode
 - `martbock/laravel-diceware` with EFF 5 words (~64.6 bits)
 
+`eurosat7/random` cannot currently be required directly via Composer VCS because its upstream `composer.json` has no valid package `name`.
+
+Use a local package-repository override in your `composer.json` instead:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "eurosat7/random",
+                "version": "dev-main",
+                "source": {
+                    "type": "git",
+                    "url": "https://github.com/eurosat7/random.git",
+                    "reference": "main"
+                },
+                "autoload": {
+                    "psr-4": {
+                        "Eurosat7\\Random\\": "src/"
+                    }
+                },
+                "require": {
+                    "php": ">=8.2"
+                }
+            }
+        }
+    ]
+}
+```
+
+Then run:
+
+```bash
+composer require --dev eurosat7/random:dev-main
+```
+
+When installed, the benchmark also includes:
+
+- `eurosat7/random` via `Eurosat7\Random\Generator::password(10)` (~64+ bits)
+
 Baseline and comparison runs:
 
 ```bash
