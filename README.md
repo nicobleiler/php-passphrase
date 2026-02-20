@@ -267,7 +267,7 @@ In this run the available benchmark providers were: `php-passphrase`, `genphrase
 
 > **Note on cold runs:** `benchGenerateCold` includes setup and first-use initialization (autoloading, object construction, and initial word-list work). Cold-run `rstdev` is therefore expected to be higher and should be interpreted as startup-cost signal, not steady-state throughput.
 
-```
+```text
 benchGenerateCold
 +----------------+--------------------------------------------------------------------+------+-----+-----------+-----------+----------+----------+
 | benchmark      | set                                                                | revs | its | mem_peak  | mode      | mean     | rstdev   |
