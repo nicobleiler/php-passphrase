@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase;
 
+use NicoBleiler\Passphrase\Exceptions\InvalidEntropyBitsTargetException;
 use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
 use Random\Engine\Secure;
 use Random\Randomizer;
@@ -74,17 +75,27 @@ class PassphraseGenerator
      * @param  ?string  $wordSeparator  Character(s) to separate words, null to use instance default
      * @param  ?bool  $capitalize  Capitalize first letter of each word, null to use instance default
      * @param  ?bool  $includeNumber  Append a random digit to a random word, null to use instance default
+     * @param  ?int  $targetEntropyBits  Optional. If set, adjusts numWords to meet or exceed this target entropy.
+     *                                   Entropy is calculated conservatively only based on the number of words in the word list, ignoring the additional entropy from numbers.
      */
     public function generate(
         ?int $numWords = null,
         ?string $wordSeparator = null,
         ?bool $capitalize = null,
         ?bool $includeNumber = null,
+        ?int $targetEntropyBits = null,
     ): string {
         $numWords ??= $this->defaultNumWords;
         $wordSeparator ??= $this->defaultWordSeparator;
         $capitalize ??= $this->defaultCapitalize;
         $includeNumber ??= $this->defaultIncludeNumber;
+
+        if ($targetEntropyBits !== null) {
+            $this->validateTargetEntropyBits($targetEntropyBits);
+
+            $desiredNumWords = (int) ceil($targetEntropyBits / $this->wordList->entropyPerWord());
+            $numWords = max($desiredNumWords, self::MINIMUM_NUM_WORDS);
+        }
 
         $this->validateNumWords($numWords);
 
@@ -187,6 +198,18 @@ class PassphraseGenerator
     {
         if ($numWords < self::MINIMUM_NUM_WORDS || $numWords > self::MAXIMUM_NUM_WORDS) {
             throw new InvalidNumWordsException(self::MINIMUM_NUM_WORDS, self::MAXIMUM_NUM_WORDS);
+        }
+    }
+
+    /**
+     * Validate the target entropy bits.
+     *
+     * @throws InvalidEntropyBitsTargetException
+     */
+    private function validateTargetEntropyBits(int $targetEntropyBits): void
+    {
+        if ($targetEntropyBits <= 0) {
+            throw new InvalidEntropyBitsTargetException;
         }
     }
 }
