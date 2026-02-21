@@ -1,4 +1,5 @@
 language: "en-US"
+early_access: true
 
 reviews:
   profile: "assertive"
