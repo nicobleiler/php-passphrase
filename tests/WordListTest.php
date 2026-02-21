@@ -87,6 +87,20 @@ class WordListTest extends TestCase
         $this->assertSame(2.0, $wordList->entropyPerWord());
     }
 
+    public function test_entropy_per_word_single_word_returns_zero(): void
+    {
+        $wordList = WordList::fromArray(['only']);
+
+        $this->assertSame(0.0, $wordList->entropyPerWord());
+    }
+
+    public function test_entropy_per_word_non_power_of_two(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+
+        $this->assertEqualsWithDelta(log(3, 2), $wordList->entropyPerWord(), 1e-10);
+    }
+
     public function test_word_at_negative_index_throws(): void
     {
         $wordList = WordList::fromArray(['alpha', 'bravo']);
