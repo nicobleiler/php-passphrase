@@ -4,8 +4,8 @@
 [![Downloads](https://img.shields.io/packagist/dt/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
 [![PHP Version](https://img.shields.io/packagist/php-v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
 [![Code Size](https://img.shields.io/github/languages/code-size/nicobleiler/php-passphrase)](https://github.com/nicobleiler/php-passphrase)
-[![Wordlist Size](https://img.shields.io/github/size/nicobleiler/php-passphrase/resources/wordlists/eff_large_wordlist.php?label=wordlist)](https://github.com/nicobleiler/php-passphrase/blob/master/resources/wordlists/eff_large_wordlist.php)[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
-[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
+[![Wordlist Size](https://img.shields.io/github/size/nicobleiler/php-passphrase/resources/wordlists/eff_large_wordlist.php?label=wordlist)](https://github.com/nicobleiler/php-passphrase/blob/master/resources/wordlists/eff_large_wordlist.php)
+[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
 
 A Bitwarden-inspired passphrase generator for PHP with first-class Laravel integration.
 
