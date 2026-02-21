@@ -103,10 +103,10 @@ class PassphraseGenerator
      * Parameters default to the instance defaults set via setDefaults().
      * In Laravel, these come from config/passphrase.php.
      *
-     * @param  ?int  $numWords  Number of words (MINIMUM_NUM_WORDS-MAXIMUM_NUM_WORDS), null to use instance default
+     * @param  ?int  $numWords  Number of words (minimum 3), null to use instance default
      * @param  ?string  $wordSeparator  Character(s) to separate words, null to use instance default
      * @param  ?bool  $capitalize  Capitalize first letter of each word, null to use instance default
-     * @param  ?bool  $includeNumber  Append a random digit to a random word, null to use instance default
+     * @param  ?bool  $includeNumber  Append a random digit (0-9) to a random word, null to use instance default
      * @param  ?int  $targetEntropyBits  Optional. If set, adjusts numWords to meet or exceed this target entropy.
      *                                   Entropy is calculated conservatively only based on the number of words in the word list, ignoring the additional entropy from numbers.
      */
