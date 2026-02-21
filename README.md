@@ -345,7 +345,7 @@ Optional providers can be added `composer require --dev genphrase/genphrase mart
 - `genphrase/genphrase` with a 65-bit target on diceware mode
 - `martbock/laravel-diceware` with EFF 5 words (~64.6 bits)
 
-`eurosat7/random` cannot currently be required directly via Composer VCS because its upstream `composer.json` has no valid package `name`.
+The `eurosat7/random` package cannot currently be required directly via Composer VCS because its upstream `composer.json` has no valid package `name`.
 
 Use a local package-repository override in your `composer.json` instead:
 
