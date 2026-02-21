@@ -75,6 +75,7 @@ class LaravelIntegrationTest extends TestCase
         $this->assertSame(PassphraseGenerator::DEFAULT_CAPITALIZE, config('passphrase.capitalize'));
         $this->assertSame(PassphraseGenerator::DEFAULT_INCLUDE_NUMBER, config('passphrase.include_number'));
         $this->assertNull(config('passphrase.word_list'));
+        $this->assertSame([], config('passphrase.excluded_words'));
     }
 
     public function test_custom_word_list_from_config(): void
@@ -129,6 +130,49 @@ class LaravelIntegrationTest extends TestCase
         $this->app->make(WordList::class);
     }
 
+    public function test_non_array_excluded_words_config_throws_clear_message(): void
+    {
+        config([
+            'passphrase.word_list' => ['correct', 'horse', 'battery', 'staple'],
+            'passphrase.excluded_words' => '/path/to/list.php',
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidExcludedWordsConfigType());
+
+        $this->app->make(WordList::class);
+    }
+
+    public function test_excluded_words_filters_custom_word_list_from_config(): void
+    {
+        config([
+            'passphrase.word_list' => ['correct', 'horse', 'battery', 'staple'],
+            'passphrase.excluded_words' => ['horse', 'staple'],
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $wordList = $this->app->make(WordList::class);
+
+        $this->assertSame(['correct', 'battery'], $wordList->all());
+    }
+
+    public function test_excluded_words_filters_bundled_eff_word_list_from_config(): void
+    {
+        config([
+            'passphrase.word_list' => null,
+            'passphrase.excluded_words' => ['abacus'],
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $wordList = $this->app->make(WordList::class);
+
+        $this->assertSame(7775, $wordList->count());
+        $this->assertNotContains('abacus', $wordList->all());
+    }
+
     public function test_config_defaults_are_applied_to_generator(): void
     {
         config([
@@ -166,5 +210,25 @@ class LaravelIntegrationTest extends TestCase
 
         $result = Passphrase::generate();
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
+    }
+
+    public function test_target_entropy_bits_with_excluded_words_config(): void
+    {
+        $words = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
+        $excluded = ['echo', 'foxtrot', 'golf', 'hotel'];
+        $diff = array_diff($words, $excluded);
+        $targetEntropyBits = 10;
+        $entropyPerWord = log(count($diff), 2);
+        $expectedNumWords = (int) ceil($targetEntropyBits / $entropyPerWord);
+
+        config([
+            'passphrase.word_list' => $words,
+            'passphrase.excluded_words' => $excluded,
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $result = Passphrase::generate(wordSeparator: '-', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode('-', $result));
     }
 }

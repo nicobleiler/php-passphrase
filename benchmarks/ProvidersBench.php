@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Benchmarks;
 
+use Eurosat7\Random\Generator as EurosatRandomGenerator;
 use GenPhrase\Password;
 use Illuminate\Container\Container;
 use Illuminate\Filesystem\Filesystem;
@@ -70,6 +71,14 @@ class ProvidersBench
             ];
         }
 
+        if (class_exists(EurosatRandomGenerator::class)) {
+            yield 'eurosat7/random Generator::password(10) (~64+ bits)' => [
+                'provider' => 'eurosat7-random-password',
+                'kind' => 'baseline',
+                'entropy_bits' => 64.0,
+            ];
+        }
+
         yield 'random_bytes(8) hex (~64 bits)' => [
             'provider' => 'random-bytes',
             'kind' => 'baseline',
@@ -98,6 +107,7 @@ class ProvidersBench
             'php-passphrase' => $this->phpPassphraseGenerator(),
             'genphrase' => $this->genphraseGenerator(),
             'laravel-diceware' => $this->laravelDicewareGenerator(),
+            'eurosat7-random-password' => static fn (): string => EurosatRandomGenerator::password(10),
             'random-bytes' => static fn (): string => bin2hex(random_bytes(8)),
             'illuminate-str-random' => static fn (): string => Str::random(11),
             'illuminate-str-password' => static fn (): string => Str::password(10),
