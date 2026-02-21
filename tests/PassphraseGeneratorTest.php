@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Tests;
 
+use NicoBleiler\Passphrase\Exceptions\InvalidEntropyBitsTargetException;
 use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\WordList;
@@ -388,6 +389,67 @@ class PassphraseGeneratorTest extends TestCase
 
         $this->expectException(InvalidNumWordsException::class);
         $generator->setDefaults(numWords: PassphraseGenerator::MINIMUM_NUM_WORDS - 1);
+    }
+
+    // -------------------------------------------------------
+    // targetEntropyBits tests
+    // -------------------------------------------------------
+
+    public function test_target_entropy_bits_zero_throws(): void
+    {
+        $this->expectException(InvalidEntropyBitsTargetException::class);
+        $this->generator->generate(targetEntropyBits: 0);
+    }
+
+    public function test_target_entropy_bits_negative_throws(): void
+    {
+        $this->expectException(InvalidEntropyBitsTargetException::class);
+        $this->generator->generate(targetEntropyBits: -1);
+    }
+
+    public function test_target_entropy_bits_low_value_uses_minimum_num_words(): void
+    {
+        // 1 bit → ceil(1 / ~12.92) = 1 word, clamped to MINIMUM_NUM_WORDS
+        $result = $this->generator->generate(wordSeparator: ' ', targetEntropyBits: 1);
+        $this->assertCount(PassphraseGenerator::MINIMUM_NUM_WORDS, explode(' ', $result));
+    }
+
+    public function test_target_entropy_bits_scales_word_count(): void
+    {
+        $targetEntropyBits = 40;
+        $expectedNumWords = max(
+            (int) ceil($targetEntropyBits / $this->generator->getWordList()->entropyPerWord()),
+            PassphraseGenerator::MINIMUM_NUM_WORDS,
+        );
+        $result = $this->generator->generate(wordSeparator: ' ', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode(' ', $result));
+    }
+
+    public function test_target_entropy_bits_128_produces_expected_word_count(): void
+    {
+        $targetEntropyBits = 128;
+        $expectedNumWords = max(
+            (int) ceil($targetEntropyBits / $this->generator->getWordList()->entropyPerWord()),
+            PassphraseGenerator::MINIMUM_NUM_WORDS,
+        );
+        $result = $this->generator->generate(wordSeparator: ' ', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode(' ', $result));
+    }
+
+    public function test_target_entropy_bits_exceeding_word_cap_throws(): void
+    {
+        $targetEntropyBits = (int) ceil(PassphraseGenerator::MAXIMUM_NUM_WORDS * $this->generator->getWordList()->entropyPerWord()) + 1;
+        $this->expectException(InvalidNumWordsException::class);
+        $this->generator->generate(targetEntropyBits: $targetEntropyBits);
+    }
+
+    public function test_target_entropy_bits_overrides_num_words_param(): void
+    {
+        $numWords = 3;
+        $targetEntropyBits = (int) ceil(($numWords + 1) * $this->generator->getWordList()->entropyPerWord());
+        $expectedNumWords = (int) ceil($targetEntropyBits / $this->generator->getWordList()->entropyPerWord());
+        $result = $this->generator->generate(numWords: $numWords, wordSeparator: '-', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode('-', $result));
     }
 
     // -------------------------------------------------------
