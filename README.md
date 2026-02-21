@@ -5,7 +5,8 @@
 [![PHP Version](https://img.shields.io/packagist/php-v/nicobleiler/php-passphrase.svg)](https://packagist.org/packages/nicobleiler/php-passphrase)
 [![Code Size](https://img.shields.io/github/languages/code-size/nicobleiler/php-passphrase)](https://github.com/nicobleiler/php-passphrase)
 [![Wordlist Size](https://img.shields.io/github/size/nicobleiler/php-passphrase/resources/wordlists/eff_large_wordlist.php?label=wordlist)](https://github.com/nicobleiler/php-passphrase/blob/master/resources/wordlists/eff_large_wordlist.php)
-[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
+[![CI](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml/badge.svg)](https://github.com/nicobleiler/php-passphrase/actions/workflows/test.yml)
+[![License](https://img.shields.io/packagist/l/nicobleiler/php-passphrase.svg)](LICENSE)
 
 A Bitwarden-inspired passphrase generator for PHP with first-class Laravel integration.
 
@@ -111,7 +112,7 @@ echo $generator->generate(); // deterministic output
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `numWords` | `?int` | `3` | Number of words (3–20). `null` uses instance/config default. |
+| `numWords` | `?int` | `3` | Number of words (minimum of 3). `null` uses instance/config default. |
 | `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
 | `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
 | `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |

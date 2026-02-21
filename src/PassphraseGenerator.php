@@ -11,16 +11,48 @@ use Random\Randomizer;
 
 class PassphraseGenerator
 {
+    /**
+     * Minimum allowed number of words in a generated passphrase.
+     *
+     * @internal
+     */
     public const MINIMUM_NUM_WORDS = 3;
 
+    /**
+     * Maximum allowed number of words in a generated passphrase.
+     *
+     * @internal
+     *
+     * @deprecated This constant is planned for removal in the next major version. Do not rely on a fixed maximum word count.
+     */
     public const MAXIMUM_NUM_WORDS = 20;
 
+    /**
+     * Default number of words used when no explicit value is provided.
+     *
+     * @internal
+     */
     public const DEFAULT_NUM_WORDS = 3;
 
+    /**
+     * Default separator used between words in generated passphrases.
+     *
+     * @internal
+     */
     public const DEFAULT_WORD_SEPARATOR = '-';
 
+    /**
+     * Default capitalization setting for generated passphrases.
+     *
+     * @internal
+     */
     public const DEFAULT_CAPITALIZE = false;
 
+    /**
+     * Default setting for appending a random digit to a generated passphrase.
+     *
+     * @internal
+     */
     public const DEFAULT_INCLUDE_NUMBER = false;
 
     private WordList $wordList;
@@ -71,10 +103,10 @@ class PassphraseGenerator
      * Parameters default to the instance defaults set via setDefaults().
      * In Laravel, these come from config/passphrase.php.
      *
-     * @param  ?int  $numWords  Number of words (MINIMUM_NUM_WORDS-MAXIMUM_NUM_WORDS), null to use instance default
+     * @param  ?int  $numWords  Number of words (minimum 3), null to use instance default
      * @param  ?string  $wordSeparator  Character(s) to separate words, null to use instance default
      * @param  ?bool  $capitalize  Capitalize first letter of each word, null to use instance default
-     * @param  ?bool  $includeNumber  Append a random digit to a random word, null to use instance default
+     * @param  ?bool  $includeNumber  Append a random digit (0-9) to a random word, null to use instance default
      * @param  ?int  $targetEntropyBits  Optional. If set, adjusts numWords to meet or exceed this target entropy.
      *                                   Entropy is calculated conservatively only based on the number of words in the word list, ignoring the additional entropy from numbers.
      */

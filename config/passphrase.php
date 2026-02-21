@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | The default number of words to include in a generated passphrase.
-    | Must be between 3 and 20.
+    | Must be a minimum of 3.
     |
     */
     'num_words' => 3,
