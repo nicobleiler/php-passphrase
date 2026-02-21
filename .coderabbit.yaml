@@ -1,0 +1,16 @@
+language: "en-US"
+
+reviews:
+  profile: "assertive"
+  high_level_summary: true
+  collapse_walkthrough: false
+  review_status: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    ignore_title_keywords:
+      - "WIP"
+    base_branches:
+      - dev
+      - "*.x"
