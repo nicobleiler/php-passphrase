@@ -57,4 +57,17 @@ return [
     */
     'word_list' => null,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Words
+    |--------------------------------------------------------------------------
+    |
+    | Words that should be removed from the configured word list.
+    |
+    | Set to an empty array to disable word exclusion.
+    | Or provide your own list, for example: ['incorrect', 'wrong', 'fail', 'error']
+    |
+    */
+    'excluded_words' => [],
+
 ];
