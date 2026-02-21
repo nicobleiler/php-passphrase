@@ -112,7 +112,7 @@ echo $generator->generate(); // deterministic output
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `numWords` | `?int` | `3` | Number of words (3–20). `null` uses instance/config default. |
+| `numWords` | `?int` | `3` | Number of words (minimum of 3). `null` uses instance/config default. |
 | `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
 | `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
 | `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |
