@@ -452,6 +452,26 @@ class PassphraseGeneratorTest extends TestCase
         $this->assertCount($expectedNumWords, explode('-', $result));
     }
 
+    public function test_target_entropy_bits_with_excluded_words_increases_word_count(): void
+    {
+        $words = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
+        $wordList = WordList::fromArray($words);
+        $targetEntropyBits = 10;
+
+        $generator = new PassphraseGenerator($wordList);
+
+        $expectedNumWords = (int) ceil($targetEntropyBits / $wordList->entropyPerWord());
+        $result = $generator->generate(wordSeparator: '|', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode('|', $result));
+
+        $filteredWordList = $wordList->excludeWords(['echo', 'foxtrot', 'golf', 'hotel']);
+        $generatorWithExcluded = new PassphraseGenerator($filteredWordList);
+
+        $expectedNumWordsWithExcluded = (int) ceil($targetEntropyBits / $filteredWordList->entropyPerWord());
+        $resultWithExcluded = $generatorWithExcluded->generate(wordSeparator: '|', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWordsWithExcluded, explode('|', $resultWithExcluded));
+    }
+
     // -------------------------------------------------------
     // EFF word list tests
     // -------------------------------------------------------

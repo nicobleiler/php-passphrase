@@ -211,4 +211,24 @@ class LaravelIntegrationTest extends TestCase
         $result = Passphrase::generate();
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
     }
+
+    public function test_target_entropy_bits_with_excluded_words_config(): void
+    {
+        $words = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
+        $excluded = ['echo', 'foxtrot', 'golf', 'hotel'];
+        $diff = array_diff($words, $excluded);
+        $targetEntropyBits = 10;
+        $entropyPerWord = log(count($diff), 2);
+        $expectedNumWords = (int) ceil($targetEntropyBits / $entropyPerWord);
+
+        config([
+            'passphrase.word_list' => $words,
+            'passphrase.excluded_words' => $excluded,
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $result = Passphrase::generate(wordSeparator: '-', targetEntropyBits: $targetEntropyBits);
+        $this->assertCount($expectedNumWords, explode('-', $result));
+    }
 }
