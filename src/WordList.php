@@ -14,6 +14,8 @@ class WordList
 
     private ?int $wordCount = null;
 
+    private ?float $entropyPerWord = null;
+
     /**
      * @param  string[]  $words
      */
@@ -94,6 +96,14 @@ class WordList
     public function count(): int
     {
         return $this->wordCount ??= count($this->words);
+    }
+
+    /**
+     * Get the entropy per word in bits.
+     */
+    public function entropyPerWord(): float
+    {
+        return $this->entropyPerWord ??= log($this->count(), 2);
     }
 
     /**

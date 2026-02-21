@@ -80,6 +80,13 @@ class WordListTest extends TestCase
         $this->assertSame($customWords, $wordList->all());
     }
 
+    public function test_entropy_per_word_returns_log2_word_count(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie', 'delta']);
+
+        $this->assertSame(2.0, $wordList->entropyPerWord());
+    }
+
     public function test_word_at_negative_index_throws(): void
     {
         $wordList = WordList::fromArray(['alpha', 'bravo']);
