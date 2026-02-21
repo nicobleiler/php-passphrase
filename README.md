@@ -140,6 +140,10 @@ return [
     // null = bundled EFF long word list (7,776 words)
     // Or provide your own word list as a PHP array of strings
     'word_list'       => null,
+
+    // Optional words to remove from the active word list
+    // Works with both bundled EFF and custom word_list values
+    'excluded_words'      => [],
 ];
 ```
 
@@ -154,6 +158,9 @@ Provide `word_list` as a PHP array of strings:
 ```php
 // config/passphrase.php
 'word_list' => ['correct', 'horse', 'battery', 'staple'],
+
+// Optionally remove specific words from the active list
+'excluded_words' => ['horse'],
 ```
 
 Or load it from a dedicated PHP file:

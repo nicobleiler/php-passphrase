@@ -102,4 +102,41 @@ class WordListTest extends TestCase
         $this->expectExceptionMessage('Word list must contain only strings');
         WordList::fromArray([42, 'hello']); // @phpstan-ignore argument.type
     }
+
+    public function test_exclude_words_filters_and_does_not_mutate_original(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+
+        $filtered = $wordList->excludeWords(['bravo']);
+
+        $this->assertNotSame($wordList, $filtered);
+        $this->assertSame(['alpha', 'bravo', 'charlie'], $wordList->all());
+        $this->assertSame(['alpha', 'charlie'], $filtered->all());
+    }
+
+    public function test_exclude_words_non_string_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectExceptionObject(WordListException::invalidExcludedWordsType());
+
+        $wordList->excludeWords(['alpha', 123]); // @phpstan-ignore argument.type
+    }
+
+    public function test_exclude_words_removing_all_words_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha']);
+
+        $this->expectException(WordListException::class);
+        $this->expectExceptionMessage('Word list is empty');
+
+        $wordList->excludeWords(['alpha']);
+    }
+
+    public function test_exclude_words_can_chain(): void
+    {
+        $filtered = WordList::fromArray(['alpha', 'bravo', 'charlie'])->excludeWords(['bravo']);
+
+        $this->assertSame(['alpha', 'charlie'], $filtered->all());
+    }
 }

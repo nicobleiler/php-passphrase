@@ -107,6 +107,30 @@ class WordList
     }
 
     /**
+     * Returns a new WordList instance without the given words.
+     *
+     * @param  string[]  $words
+     */
+    public function excludeWords(array $words): self
+    {
+        if ($words === []) {
+            return $this;
+        }
+
+        foreach ($words as $word) {
+            if (! is_string($word)) {
+                throw WordListException::invalidExcludedWordsType();
+            }
+        }
+
+        $filteredWords = array_values(
+            array_diff($this->words, $words)
+        );
+
+        return self::fromArray($filteredWords);
+    }
+
+    /**
      * Get the path to the compiled bundled EFF large word list.
      */
     public static function effCompiledWordListPath(): string

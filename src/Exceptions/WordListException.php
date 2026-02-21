@@ -27,4 +27,14 @@ class WordListException extends RuntimeException
     {
         return new self('Word list must contain only strings');
     }
+
+    public static function invalidExcludedWordsType(): self
+    {
+        return new self('Excluded words must contain only strings');
+    }
+
+    public static function invalidExcludedWordsConfigType(): self
+    {
+        return new self('Excluded words config must be an array of strings');
+    }
 }
