@@ -8,7 +8,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | The default number of words to include in a generated passphrase.
-    | Must be between 3 and 20.
+    | Must be a minimum of 3.
     |
     */
     'num_words' => 3,
@@ -56,5 +56,18 @@ return [
     |
     */
     'word_list' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Excluded Words
+    |--------------------------------------------------------------------------
+    |
+    | Words that should be removed from the configured word list.
+    |
+    | Set to an empty array to disable word exclusion.
+    | Or provide your own list, for example: ['incorrect', 'wrong', 'fail', 'error']
+    |
+    */
+    'excluded_words' => [],
 
 ];
