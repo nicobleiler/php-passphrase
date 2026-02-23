@@ -241,7 +241,7 @@ class PassphraseGenerator
     private function validateTargetEntropyBits(int $targetEntropyBits): void
     {
         if ($targetEntropyBits <= 0) {
-            throw new InvalidEntropyBitsTargetException;
+            throw InvalidEntropyBitsTargetException::belowMinimum();
         }
     }
 }
