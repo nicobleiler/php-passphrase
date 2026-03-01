@@ -71,6 +71,10 @@ class WordList
             }
         }
 
+        if (count($words) < 2) {
+            throw WordListException::insufficientEntropy();
+        }
+
         return new self($words);
     }
 

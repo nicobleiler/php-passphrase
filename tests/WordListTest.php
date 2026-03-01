@@ -66,8 +66,7 @@ class WordListTest extends TestCase
 
     public function test_from_array_empty_throws(): void
     {
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list is empty');
+        $this->expectExceptionObject(WordListException::empty());
         WordList::fromArray([]);
     }
 
@@ -87,11 +86,11 @@ class WordListTest extends TestCase
         $this->assertSame(2.0, $wordList->entropyPerWord());
     }
 
-    public function test_entropy_per_word_single_word_returns_zero(): void
+    public function test_from_array_single_word_throws(): void
     {
-        $wordList = WordList::fromArray(['only']);
+        $this->expectExceptionObject(WordListException::insufficientEntropy());
 
-        $this->assertSame(0.0, $wordList->entropyPerWord());
+        WordList::fromArray(['only']);
     }
 
     public function test_entropy_per_word_non_power_of_two(): void
@@ -119,8 +118,7 @@ class WordListTest extends TestCase
 
     public function test_from_array_non_string_throws(): void
     {
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list must contain only strings');
+        $this->expectExceptionObject(WordListException::invalidType());
         WordList::fromArray([42, 'hello']); // @phpstan-ignore argument.type
     }
 
@@ -146,12 +144,20 @@ class WordListTest extends TestCase
 
     public function test_exclude_words_removing_all_words_throws(): void
     {
-        $wordList = WordList::fromArray(['alpha']);
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
 
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list is empty');
+        $this->expectExceptionObject(WordListException::empty());
 
-        $wordList->excludeWords(['alpha']);
+        $wordList->excludeWords(['alpha', 'bravo']);
+    }
+
+    public function test_exclude_words_resulting_in_single_word_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectExceptionObject(WordListException::insufficientEntropy());
+
+        $wordList->excludeWords(['bravo']);
     }
 
     public function test_exclude_words_can_chain(): void
