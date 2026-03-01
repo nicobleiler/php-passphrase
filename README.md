@@ -116,8 +116,20 @@ echo $generator->generate(); // deterministic output
 | `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
 | `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
 | `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |
+| `targetEntropyBits` | `?int` | `null` | Optional. Adjusts word count to meet or exceed this entropy target (in bits). Overrides `numWords` when set. |
 
-All parameters are nullable — passing `null` (or omitting them) uses the defaults set via `setDefaults()` or `config/passphrase.php` in Laravel.
+All `generate()` parameters are nullable. For `numWords`, `wordSeparator`, `capitalize`, and `includeNumber`, passing `null` (or omitting them) uses defaults set via `setDefaults()` or `config/passphrase.php` in Laravel.
+
+`targetEntropyBits` is evaluated per-call by `generate()` and is not loaded from `setDefaults()` (there is currently no `target_entropy_bits` config key).
+
+When calling `generate()`, providing `targetEntropyBits` takes precedence over `numWords`.
+
+```php
+$generator = new PassphraseGenerator();
+
+// Entropy-based generation: numWords is calculated to reach at least 60 bits
+echo $generator->generate(targetEntropyBits: 60);
+```
 
 These match [Bitwarden's passphrase generator options](https://bitwarden.com/passphrase-generator/) exactly.
 
@@ -138,6 +150,8 @@ return [
     'capitalize'      => false,
     'include_number'  => false,
 
+    // No 'target_entropy_bits' key: targetEntropyBits is a per-call generate() override
+
     // null = bundled EFF long word list (7,776 words)
     // Or provide your own word list as a PHP array of strings
     'word_list'       => null,
@@ -148,7 +162,9 @@ return [
 ];
 ```
 
-These config values are automatically used as defaults when calling `Passphrase::generate()` without explicit parameters. You can still override any option per-call.
+These config values are wired into `PassphraseGenerator::setDefaults()` and are automatically used as defaults when calling `Passphrase::generate()` without explicit parameters.
+
+`targetEntropyBits` is not part of `setDefaults()` and therefore has no `target_entropy_bits` config key; pass it directly to `generate()` when you want entropy-targeted generation.
 
 ## Word Lists
 
