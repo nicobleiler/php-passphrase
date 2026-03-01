@@ -6,11 +6,13 @@ namespace NicoBleiler\Passphrase\Tests;
 
 use NicoBleiler\Passphrase\Exceptions\InvalidEntropyBitsTargetException;
 use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\WordList;
 use PHPUnit\Framework\TestCase;
 use Random\Engine\Xoshiro256StarStar;
 use Random\Randomizer;
+use ReflectionProperty;
 
 /**
  * Tests modeled after Bitwarden's passphrase generator tests.
@@ -450,6 +452,19 @@ class PassphraseGeneratorTest extends TestCase
         $expectedNumWords = (int) ceil($targetEntropyBits / $this->generator->getWordList()->entropyPerWord());
         $result = $this->generator->generate(numWords: $numWords, wordSeparator: '-', targetEntropyBits: $targetEntropyBits);
         $this->assertCount($expectedNumWords, explode('-', $result));
+    }
+
+    public function test_target_entropy_bits_with_zero_entropy_word_list_throws_word_list_exception(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $entropyPerWord = new ReflectionProperty($wordList, 'entropyPerWord');
+        $entropyPerWord->setValue($wordList, 0.0);
+
+        $generator = new PassphraseGenerator($wordList);
+
+        $this->expectExceptionObject(WordListException::insufficientEntropy());
+        $generator->generate(targetEntropyBits: 1);
     }
 
     public function test_target_entropy_bits_with_excluded_words_increases_word_count(): void

@@ -8,8 +8,8 @@ use InvalidArgumentException;
 
 class InvalidEntropyBitsTargetException extends InvalidArgumentException
 {
-    public function __construct()
+    public static function belowMinimum(): self
     {
-        parent::__construct('Target entropy bits must be greater than 0');
+        return new self('Target entropy bits must be greater than 0');
     }
 }

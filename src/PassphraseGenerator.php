@@ -6,6 +6,7 @@ namespace NicoBleiler\Passphrase;
 
 use NicoBleiler\Passphrase\Exceptions\InvalidEntropyBitsTargetException;
 use NicoBleiler\Passphrase\Exceptions\InvalidNumWordsException;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 use Random\Engine\Secure;
 use Random\Randomizer;
 
@@ -125,7 +126,12 @@ class PassphraseGenerator
         if ($targetEntropyBits !== null) {
             $this->validateTargetEntropyBits($targetEntropyBits);
 
-            $desiredNumWords = (int) ceil($targetEntropyBits / $this->wordList->entropyPerWord());
+            $entropyPerWord = $this->wordList->entropyPerWord();
+            if ($entropyPerWord <= 0) {
+                throw WordListException::insufficientEntropy();
+            }
+
+            $desiredNumWords = (int) ceil($targetEntropyBits / $entropyPerWord);
             $numWords = max($desiredNumWords, self::MINIMUM_NUM_WORDS);
         }
 
@@ -241,7 +247,7 @@ class PassphraseGenerator
     private function validateTargetEntropyBits(int $targetEntropyBits): void
     {
         if ($targetEntropyBits <= 0) {
-            throw new InvalidEntropyBitsTargetException;
+            throw InvalidEntropyBitsTargetException::belowMinimum();
         }
     }
 }
