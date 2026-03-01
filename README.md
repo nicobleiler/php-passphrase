@@ -116,8 +116,18 @@ echo $generator->generate(); // deterministic output
 | `wordSeparator` | `?string` | `'-'` | Character(s) between words. `null` uses instance/config default. |
 | `capitalize` | `?bool` | `false` | Capitalize the first letter of each word. `null` uses instance/config default. |
 | `includeNumber` | `?bool` | `false` | Append a random digit (0–9) to one random word. `null` uses instance/config default. |
+| `targetEntropyBits` | `?int` | `null` | Optional. Adjusts word count to meet or exceed this entropy target (in bits). Overrides `numWords` when set. |
 
 All parameters are nullable — passing `null` (or omitting them) uses the defaults set via `setDefaults()` or `config/passphrase.php` in Laravel.
+
+When calling `generate()`, providing `targetEntropyBits` takes precedence over `numWords`.
+
+```php
+$generator = new PassphraseGenerator();
+
+// Entropy-based generation: numWords is calculated to reach at least 60 bits
+echo $generator->generate(targetEntropyBits: 60);
+```
 
 These match [Bitwarden's passphrase generator options](https://bitwarden.com/passphrase-generator/) exactly.
 
