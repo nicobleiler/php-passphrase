@@ -23,8 +23,23 @@ class WordListException extends RuntimeException
         return new self('Word list is empty');
     }
 
+    public static function insufficientEntropy(): self
+    {
+        return new self('Word list must contain at least 2 words');
+    }
+
     public static function invalidType(): self
     {
         return new self('Word list must contain only strings');
+    }
+
+    public static function invalidExcludedWordsType(): self
+    {
+        return new self('Excluded words must contain only strings');
+    }
+
+    public static function invalidExcludedWordsConfigType(): self
+    {
+        return new self('Excluded words config must be an array of strings');
     }
 }

@@ -66,8 +66,7 @@ class WordListTest extends TestCase
 
     public function test_from_array_empty_throws(): void
     {
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list is empty');
+        $this->expectExceptionObject(WordListException::empty());
         WordList::fromArray([]);
     }
 
@@ -78,6 +77,27 @@ class WordListTest extends TestCase
 
         $this->assertSame(4, $wordList->count());
         $this->assertSame($customWords, $wordList->all());
+    }
+
+    public function test_entropy_per_word_returns_log2_word_count(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie', 'delta']);
+
+        $this->assertSame(2.0, $wordList->entropyPerWord());
+    }
+
+    public function test_from_array_single_word_throws(): void
+    {
+        $this->expectExceptionObject(WordListException::insufficientEntropy());
+
+        WordList::fromArray(['only']);
+    }
+
+    public function test_entropy_per_word_non_power_of_two(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+
+        $this->assertEqualsWithDelta(log(3, 2), $wordList->entropyPerWord(), 1e-10);
     }
 
     public function test_word_at_negative_index_throws(): void
@@ -98,8 +118,52 @@ class WordListTest extends TestCase
 
     public function test_from_array_non_string_throws(): void
     {
-        $this->expectException(WordListException::class);
-        $this->expectExceptionMessage('Word list must contain only strings');
+        $this->expectExceptionObject(WordListException::invalidType());
         WordList::fromArray([42, 'hello']); // @phpstan-ignore argument.type
+    }
+
+    public function test_exclude_words_filters_and_does_not_mutate_original(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo', 'charlie']);
+
+        $filtered = $wordList->excludeWords(['bravo']);
+
+        $this->assertNotSame($wordList, $filtered);
+        $this->assertSame(['alpha', 'bravo', 'charlie'], $wordList->all());
+        $this->assertSame(['alpha', 'charlie'], $filtered->all());
+    }
+
+    public function test_exclude_words_non_string_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectExceptionObject(WordListException::invalidExcludedWordsType());
+
+        $wordList->excludeWords(['alpha', 123]); // @phpstan-ignore argument.type
+    }
+
+    public function test_exclude_words_removing_all_words_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectExceptionObject(WordListException::empty());
+
+        $wordList->excludeWords(['alpha', 'bravo']);
+    }
+
+    public function test_exclude_words_resulting_in_single_word_throws(): void
+    {
+        $wordList = WordList::fromArray(['alpha', 'bravo']);
+
+        $this->expectExceptionObject(WordListException::insufficientEntropy());
+
+        $wordList->excludeWords(['bravo']);
+    }
+
+    public function test_exclude_words_can_chain(): void
+    {
+        $filtered = WordList::fromArray(['alpha', 'bravo', 'charlie'])->excludeWords(['bravo']);
+
+        $this->assertSame(['alpha', 'charlie'], $filtered->all());
     }
 }

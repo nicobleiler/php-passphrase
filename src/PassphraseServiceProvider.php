@@ -15,16 +15,21 @@ class PassphraseServiceProvider extends ServiceProvider
 
         $this->app->singleton(WordList::class, function (): \NicoBleiler\Passphrase\WordList {
             $wordList = config('passphrase.word_list');
+            $excludedWords = config('passphrase.excluded_words', []);
+
+            if (! is_array($excludedWords)) {
+                throw WordListException::invalidExcludedWordsConfigType();
+            }
 
             if ($wordList !== null) {
                 if (! is_array($wordList)) {
                     throw WordListException::invalidConfigType();
                 }
 
-                return WordList::fromArray($wordList);
+                return WordList::fromArray($wordList)->excludeWords($excludedWords);
             }
 
-            return WordList::eff();
+            return WordList::eff()->excludeWords($excludedWords);
         });
 
         $this->app->singleton(PassphraseGenerator::class, function ($app): \NicoBleiler\Passphrase\PassphraseGenerator {

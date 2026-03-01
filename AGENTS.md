@@ -58,6 +58,7 @@ Agents should run tests after meaningful changes, especially for behavior update
 
 - Default behavior relies on the bundled EFF long list.
 - Custom word lists are provided as PHP arrays (config `word_list` or `WordList::fromArray()`).
+- Optional exclusion of words is provided via config `excluded_words` and `$wordlist->excludeWords()`.
 - Do not add logging/output that could leak generated passphrases.
 
 ## Laravel Integration Notes
