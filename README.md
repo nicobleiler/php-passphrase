@@ -150,7 +150,9 @@ return [
 
 These config values are automatically used as defaults when calling `Passphrase::generate()` without explicit parameters. You can still override any option per-call.
 
-## Custom Word Lists
+## Word Lists
+
+> **Note:** All word lists (bundled or custom) must contain at least 2 words. This validation also applies after exclusions.
 
 ### Via Config (Laravel)
 

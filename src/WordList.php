@@ -65,6 +65,10 @@ class WordList
             throw WordListException::empty();
         }
 
+        if (count($words) < 2) {
+            throw WordListException::insufficientEntropy();
+        }
+
         foreach ($words as $word) {
             if (! is_string($word)) {
                 throw WordListException::invalidType();
