@@ -66,6 +66,8 @@ Agents should run tests after meaningful changes, especially for behavior update
 - Keep service provider bindings/facade alias behavior intact.
 - The service provider wires `config/passphrase.php` values into `PassphraseGenerator::setDefaults()`.
 - `Passphrase::generate()` without arguments uses config defaults; explicit params override them.
+- `PassphraseGenerator::generate(targetEntropyBits: ...)` is a per-call entropy target and takes precedence over `numWords`.
+- `targetEntropyBits` is not part of `setDefaults()` and is not read from Laravel config (no `target_entropy_bits` key in `config/passphrase.php`).
 - If config keys change, update tests and docs consistently.
 
 ## Documentation Expectations
