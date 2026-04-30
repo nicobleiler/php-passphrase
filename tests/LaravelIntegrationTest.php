@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase\Tests;
 
 use NicoBleiler\Passphrase\Exceptions\ConfigException;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\Facades\Passphrase;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\PassphraseServiceProvider;
@@ -144,6 +145,31 @@ class LaravelIntegrationTest extends TestCase
         $this->refreshServiceProvider();
 
         $this->expectExceptionObject(ConfigException::invalidExcludedWords());
+
+        $this->app?->make(WordList::class);
+    }
+
+    public function test_word_list_with_non_string_element_throws(): void
+    {
+        config(['passphrase.word_list' => ['ok', 123]]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidType());
+
+        $this->app?->make(WordList::class);
+    }
+
+    public function test_excluded_words_with_non_string_element_throws(): void
+    {
+        config([
+            'passphrase.word_list' => ['ok', 'horse'],
+            'passphrase.excluded_words' => ['ok', 123],
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidExcludedWordsType());
 
         $this->app?->make(WordList::class);
     }
