@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace NicoBleiler\Passphrase;
 
 use Illuminate\Support\ServiceProvider;
+use NicoBleiler\Passphrase\Exceptions\ConfigException;
 use NicoBleiler\Passphrase\Exceptions\WordListException;
 
 class PassphraseServiceProvider extends ServiceProvider
@@ -34,13 +35,32 @@ class PassphraseServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(PassphraseGenerator::class, function ($app): PassphraseGenerator {
-            $generator = new PassphraseGenerator($app->make(WordList::class));
+            $numWords = config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS);
+            if (! is_int($numWords)) {
+                throw ConfigException::invalidNumWords();
+            }
 
+            $wordSeparator = config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR);
+            if (! is_string($wordSeparator)) {
+                throw ConfigException::invalidWordSeparator();
+            }
+
+            $capitalize = config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE);
+            if (! is_bool($capitalize)) {
+                throw ConfigException::invalidCapitalize();
+            }
+
+            $includeNumber = config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER);
+            if (! is_bool($includeNumber)) {
+                throw ConfigException::invalidIncludeNumber();
+            }
+
+            $generator = new PassphraseGenerator($app->make(WordList::class));
             $generator->setDefaults(
-                numWords: (int) config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS),
-                wordSeparator: (string) config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR),
-                capitalize: (bool) config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE),
-                includeNumber: (bool) config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER),
+                numWords: $numWords,
+                wordSeparator: $wordSeparator,
+                capitalize: $capitalize,
+                includeNumber: $includeNumber,
             );
 
             return $generator;
