@@ -22,7 +22,7 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.0 || ^10.0",
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "phpunit/phpunit": "^11.4 || ^12.0 || ^13.0",
         "phpstan/phpstan": "^2.1",
         "laravel/pint": "^1.27",
