@@ -212,6 +212,50 @@ class LaravelIntegrationTest extends TestCase
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
     }
 
+    public function test_non_integer_num_words_config_throws(): void
+    {
+        config(['passphrase.num_words' => 'three']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidNumWords());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_string_word_separator_config_throws(): void
+    {
+        config(['passphrase.word_separator' => 42]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidWordSeparator());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_capitalize_config_throws(): void
+    {
+        config(['passphrase.capitalize' => 'yes']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidCapitalize());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_include_number_config_throws(): void
+    {
+        config(['passphrase.include_number' => 1]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidIncludeNumber());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
     public function test_target_entropy_bits_with_excluded_words_config(): void
     {
         $words = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
