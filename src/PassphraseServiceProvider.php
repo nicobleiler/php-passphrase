@@ -13,7 +13,7 @@ class PassphraseServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/passphrase.php', 'passphrase');
 
-        $this->app->singleton(WordList::class, function (): \NicoBleiler\Passphrase\WordList {
+        $this->app->singleton(WordList::class, function (): WordList {
             $wordList = config('passphrase.word_list');
             $excludedWords = config('passphrase.excluded_words', []);
 
@@ -32,7 +32,7 @@ class PassphraseServiceProvider extends ServiceProvider
             return WordList::eff()->excludeWords($excludedWords);
         });
 
-        $this->app->singleton(PassphraseGenerator::class, function ($app): \NicoBleiler\Passphrase\PassphraseGenerator {
+        $this->app->singleton(PassphraseGenerator::class, function ($app): PassphraseGenerator {
             $generator = new PassphraseGenerator($app->make(WordList::class));
 
             $generator->setDefaults(
