@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use NicoBleiler\Passphrase\Exceptions\ConfigException;
 
@@ -35,7 +36,7 @@ class PassphraseServiceProvider extends ServiceProvider
             return WordList::eff()->excludeWords($excludedWords);
         });
 
-        $this->app->singleton(PassphraseGenerator::class, function ($app): PassphraseGenerator {
+        $this->app->singleton(PassphraseGenerator::class, function (Application $app): PassphraseGenerator {
             $numWords = config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS);
             if (! is_int($numWords)) {
                 throw ConfigException::invalidNumWords();
