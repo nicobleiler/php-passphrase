@@ -20,11 +20,12 @@ class PassphraseServiceProvider extends ServiceProvider
             if (! is_array($excludedWords)) {
                 throw WordListException::invalidExcludedWordsConfigType();
             }
-
+            /** @var array<string> $excludedWords */
             if ($wordList !== null) {
                 if (! is_array($wordList)) {
                     throw WordListException::invalidConfigType();
                 }
+                /** @var array<string> $wordList */
 
                 return WordList::fromArray($wordList)->excludeWords($excludedWords);
             }
