@@ -20,7 +20,7 @@
                 "digest"
             ],
             "automerge": true,
-            "platformAutomerge": false,
+            "platformAutomerge": true,
             "automergeType": "pr",
             "matchBaseBranches": [
                 "dev"
