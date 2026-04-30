@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   quality:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         shell: bash
@@ -64,16 +64,14 @@ jobs:
       matrix:
         os: ${{ fromJSON(github.ref_name == 'master' && '["ubuntu-22.04", "windows-2022"]' || '["ubuntu-22.04"]') }}
         php: ["8.2", "8.3", "8.4", "8.5"]
-        laravel: ["11", "12"]
+        laravel: ["11", "12", "13"]
         exclude:
           - php: 8.4
             laravel: 11
           - php: 8.5
             laravel: 11
           - php: 8.2
-            laravel: 12
-          - php: 8.3
-            laravel: 12
+            laravel: 13
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.os }}
 

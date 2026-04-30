@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Tests;
 
-use NicoBleiler\Passphrase\Exceptions\WordListException;
+use NicoBleiler\Passphrase\Exceptions\ConfigException;
 use NicoBleiler\Passphrase\Facades\Passphrase;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 use NicoBleiler\Passphrase\PassphraseServiceProvider;
@@ -125,7 +125,7 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $this->expectExceptionObject(WordListException::invalidConfigType());
+        $this->expectExceptionObject(ConfigException::invalidWordList());
 
         $this->app->make(WordList::class);
     }
@@ -139,7 +139,7 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $this->expectExceptionObject(WordListException::invalidExcludedWordsConfigType());
+        $this->expectExceptionObject(ConfigException::invalidExcludedWords());
 
         $this->app->make(WordList::class);
     }
@@ -210,6 +210,50 @@ class LaravelIntegrationTest extends TestCase
 
         $result = Passphrase::generate();
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
+    }
+
+    public function test_non_integer_num_words_config_throws(): void
+    {
+        config(['passphrase.num_words' => 'three']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidNumWords());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_string_word_separator_config_throws(): void
+    {
+        config(['passphrase.word_separator' => 42]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidWordSeparator());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_capitalize_config_throws(): void
+    {
+        config(['passphrase.capitalize' => 'yes']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidCapitalize());
+
+        $this->app->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_include_number_config_throws(): void
+    {
+        config(['passphrase.include_number' => 1]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidIncludeNumber());
+
+        $this->app->make(PassphraseGenerator::class);
     }
 
     public function test_target_entropy_bits_with_excluded_words_config(): void
