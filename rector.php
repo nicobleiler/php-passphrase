@@ -24,4 +24,4 @@ return RectorConfig::configure()
         typeDeclarations: true,
         earlyReturn: true,
     )
-    ->withPhpSets(php82: true);
+    ->withPhpSets();
