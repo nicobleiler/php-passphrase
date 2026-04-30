@@ -51,6 +51,7 @@ class WordList
             throw WordListException::empty();
         }
 
+        /** @var array<string> $words */
         return self::fromArray($words);
     }
 
