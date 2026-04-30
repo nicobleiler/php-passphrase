@@ -16,6 +16,9 @@ class WordList
 
     private ?float $entropyPerWord = null;
 
+    /** Caches the parsed EFF word list so the file is only read once per process, regardless of how many derived lists (e.g. with excluded words) are created from it. */
+    private static ?self $cachedEff = null;
+
     /**
      * @param  string[]  $words
      */
@@ -29,9 +32,7 @@ class WordList
      */
     public static function eff(): self
     {
-        static $cachedEff = null;
-
-        return $cachedEff ??= self::loadBundledEff();
+        return self::$cachedEff ??= self::loadBundledEff();
     }
 
     /**
