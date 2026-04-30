@@ -7,6 +7,7 @@ namespace NicoBleiler\Passphrase;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use NicoBleiler\Passphrase\Exceptions\ConfigException;
+use NicoBleiler\Passphrase\Exceptions\WordListException;
 
 class PassphraseServiceProvider extends ServiceProvider
 {
@@ -22,10 +23,22 @@ class PassphraseServiceProvider extends ServiceProvider
                 throw ConfigException::invalidExcludedWords();
             }
 
+            foreach ($excludedWords as $excludedWord) {
+                if (! is_string($excludedWord)) {
+                    throw WordListException::invalidExcludedWordsType();
+                }
+            }
+
             /** @var array<string> $excludedWords */
             if ($wordList !== null) {
                 if (! is_array($wordList)) {
                     throw ConfigException::invalidWordList();
+                }
+
+                foreach ($wordList as $configuredWord) {
+                    if (! is_string($configuredWord)) {
+                        throw WordListException::invalidType();
+                    }
                 }
 
                 /** @var array<string> $wordList */

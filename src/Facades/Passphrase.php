@@ -7,6 +7,9 @@ namespace NicoBleiler\Passphrase\Facades;
 use Illuminate\Support\Facades\Facade;
 use NicoBleiler\Passphrase\PassphraseGenerator;
 
+/**
+ * @mixin PassphraseGenerator
+ */
 class Passphrase extends Facade
 {
     protected static function getFacadeAccessor(): string
