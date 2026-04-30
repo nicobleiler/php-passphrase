@@ -27,4 +27,14 @@ class ConfigException extends RuntimeException
     {
         return new self('Include number config must be a boolean');
     }
+
+    public static function invalidWordList(): self
+    {
+        return new self('Word list config must be an array of strings');
+    }
+
+    public static function invalidExcludedWords(): self
+    {
+        return new self('Excluded words config must be an array of strings');
+    }
 }
