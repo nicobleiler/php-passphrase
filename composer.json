@@ -52,8 +52,8 @@
     "scripts": {
         "analyse": "phpstan analyse --no-progress --memory-limit=1G",
         "lint": [
-            "pint",
-            "rector"
+            "rector",
+            "pint"
         ],
         "test:lint": [
             "pint --test",
@@ -63,8 +63,8 @@
         "test:types": "phpstan",
         "test": [
             "@test:lint",
-            "@test:unit",
-            "@test:types"
+            "@test:types",
+            "@test:unit"
         ],
         "bench": "vendor/bin/phpbench run --report=providers",
         "bench:baseline": "vendor/bin/phpbench run --tag=baseline --report=providers",
