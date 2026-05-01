@@ -1,6 +1,8 @@
 parameters:
-    level: 8
+    level: 10
     paths:
         - src
+        - tests
     treatPhpDocTypesAsCertain: false
+    checkBenevolentUnionTypes: true
     tmpDir: .phpstan/cache

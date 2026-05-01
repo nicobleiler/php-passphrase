@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
+use NicoBleiler\Passphrase\Exceptions\ConfigException;
 use NicoBleiler\Passphrase\Exceptions\WordListException;
 
 class PassphraseServiceProvider extends ServiceProvider
@@ -13,18 +15,33 @@ class PassphraseServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__.'/../config/passphrase.php', 'passphrase');
 
-        $this->app->singleton(WordList::class, function (): \NicoBleiler\Passphrase\WordList {
+        $this->app->singleton(WordList::class, function (): WordList {
             $wordList = config('passphrase.word_list');
             $excludedWords = config('passphrase.excluded_words', []);
 
             if (! is_array($excludedWords)) {
-                throw WordListException::invalidExcludedWordsConfigType();
+                throw ConfigException::invalidExcludedWords();
             }
 
+            foreach ($excludedWords as $excludedWord) {
+                if (! is_string($excludedWord)) {
+                    throw WordListException::invalidExcludedWordsType();
+                }
+            }
+
+            /** @var array<string> $excludedWords */
             if ($wordList !== null) {
                 if (! is_array($wordList)) {
-                    throw WordListException::invalidConfigType();
+                    throw ConfigException::invalidWordList();
                 }
+
+                foreach ($wordList as $configuredWord) {
+                    if (! is_string($configuredWord)) {
+                        throw WordListException::invalidType();
+                    }
+                }
+
+                /** @var array<string> $wordList */
 
                 return WordList::fromArray($wordList)->excludeWords($excludedWords);
             }
@@ -32,14 +49,33 @@ class PassphraseServiceProvider extends ServiceProvider
             return WordList::eff()->excludeWords($excludedWords);
         });
 
-        $this->app->singleton(PassphraseGenerator::class, function ($app): \NicoBleiler\Passphrase\PassphraseGenerator {
-            $generator = new PassphraseGenerator($app->make(WordList::class));
+        $this->app->singleton(PassphraseGenerator::class, function (Application $app): PassphraseGenerator {
+            $numWords = config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS);
+            if (! is_int($numWords)) {
+                throw ConfigException::invalidNumWords();
+            }
 
+            $wordSeparator = config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR);
+            if (! is_string($wordSeparator)) {
+                throw ConfigException::invalidWordSeparator();
+            }
+
+            $capitalize = config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE);
+            if (! is_bool($capitalize)) {
+                throw ConfigException::invalidCapitalize();
+            }
+
+            $includeNumber = config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER);
+            if (! is_bool($includeNumber)) {
+                throw ConfigException::invalidIncludeNumber();
+            }
+
+            $generator = new PassphraseGenerator($app->make(WordList::class));
             $generator->setDefaults(
-                numWords: (int) config('passphrase.num_words', PassphraseGenerator::DEFAULT_NUM_WORDS),
-                wordSeparator: (string) config('passphrase.word_separator', PassphraseGenerator::DEFAULT_WORD_SEPARATOR),
-                capitalize: (bool) config('passphrase.capitalize', PassphraseGenerator::DEFAULT_CAPITALIZE),
-                includeNumber: (bool) config('passphrase.include_number', PassphraseGenerator::DEFAULT_INCLUDE_NUMBER),
+                numWords: $numWords,
+                wordSeparator: $wordSeparator,
+                capitalize: $capitalize,
+                includeNumber: $includeNumber,
             );
 
             return $generator;

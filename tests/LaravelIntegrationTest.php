@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace NicoBleiler\Passphrase\Tests;
 
+use NicoBleiler\Passphrase\Exceptions\ConfigException;
 use NicoBleiler\Passphrase\Exceptions\WordListException;
 use NicoBleiler\Passphrase\Facades\Passphrase;
 use NicoBleiler\Passphrase\PassphraseGenerator;
@@ -18,9 +19,9 @@ class LaravelIntegrationTest extends TestCase
      */
     private function refreshServiceProvider(): void
     {
-        $this->app->forgetInstance(WordList::class);
-        $this->app->forgetInstance(PassphraseGenerator::class);
-        (new PassphraseServiceProvider($this->app))->register();
+        $this->app?->forgetInstance(WordList::class);
+        $this->app?->forgetInstance(PassphraseGenerator::class);
+        $this->app?->register(PassphraseServiceProvider::class);
     }
 
     /**
@@ -43,21 +44,21 @@ class LaravelIntegrationTest extends TestCase
 
     public function test_service_provider_registers_generator(): void
     {
-        $generator = $this->app->make(PassphraseGenerator::class);
+        $generator = $this->app?->make(PassphraseGenerator::class);
         $this->assertInstanceOf(PassphraseGenerator::class, $generator);
     }
 
     public function test_service_provider_registers_word_list(): void
     {
-        $wordList = $this->app->make(WordList::class);
+        $wordList = $this->app?->make(WordList::class);
         $this->assertInstanceOf(WordList::class, $wordList);
         $this->assertSame(7776, $wordList->count());
     }
 
     public function test_generator_is_singleton(): void
     {
-        $gen1 = $this->app->make(PassphraseGenerator::class);
-        $gen2 = $this->app->make(PassphraseGenerator::class);
+        $gen1 = $this->app?->make(PassphraseGenerator::class);
+        $gen2 = $this->app?->make(PassphraseGenerator::class);
         $this->assertSame($gen1, $gen2);
     }
 
@@ -84,14 +85,18 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $wordList = $this->app->make(WordList::class);
-        $this->assertSame(4, $wordList->count());
+        $wordList = $this->app?->make(WordList::class);
+        $this->assertSame(4, $wordList?->count());
         $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
     }
 
     public function test_custom_word_list_can_be_loaded_via_require_file(): void
     {
         $tmpFile = tempnam(sys_get_temp_dir(), 'custom_wl_');
+        if ($tmpFile === false) {
+            $this->fail('Failed to create temporary file');
+        }
+
         file_put_contents(
             $tmpFile,
             <<<'PHP'
@@ -111,8 +116,8 @@ class LaravelIntegrationTest extends TestCase
 
             $this->refreshServiceProvider();
 
-            $wordList = $this->app->make(WordList::class);
-            $this->assertSame(4, $wordList->count());
+            $wordList = $this->app?->make(WordList::class);
+            $this->assertSame(4, $wordList?->count());
             $this->assertSame(['correct', 'horse', 'battery', 'staple'], $wordList->all());
         } finally {
             unlink($tmpFile);
@@ -125,9 +130,9 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $this->expectExceptionObject(WordListException::invalidConfigType());
+        $this->expectExceptionObject(ConfigException::invalidWordList());
 
-        $this->app->make(WordList::class);
+        $this->app?->make(WordList::class);
     }
 
     public function test_non_array_excluded_words_config_throws_clear_message(): void
@@ -139,9 +144,34 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $this->expectExceptionObject(WordListException::invalidExcludedWordsConfigType());
+        $this->expectExceptionObject(ConfigException::invalidExcludedWords());
 
-        $this->app->make(WordList::class);
+        $this->app?->make(WordList::class);
+    }
+
+    public function test_word_list_with_non_string_element_throws(): void
+    {
+        config(['passphrase.word_list' => ['ok', 123]]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidType());
+
+        $this->app?->make(WordList::class);
+    }
+
+    public function test_excluded_words_with_non_string_element_throws(): void
+    {
+        config([
+            'passphrase.word_list' => ['ok', 'horse'],
+            'passphrase.excluded_words' => ['ok', 123],
+        ]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(WordListException::invalidExcludedWordsType());
+
+        $this->app?->make(WordList::class);
     }
 
     public function test_excluded_words_filters_custom_word_list_from_config(): void
@@ -153,9 +183,9 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $wordList = $this->app->make(WordList::class);
+        $wordList = $this->app?->make(WordList::class);
 
-        $this->assertSame(['correct', 'battery'], $wordList->all());
+        $this->assertSame(['correct', 'battery'], $wordList?->all());
     }
 
     public function test_excluded_words_filters_bundled_eff_word_list_from_config(): void
@@ -167,9 +197,9 @@ class LaravelIntegrationTest extends TestCase
 
         $this->refreshServiceProvider();
 
-        $wordList = $this->app->make(WordList::class);
+        $wordList = $this->app?->make(WordList::class);
 
-        $this->assertSame(7775, $wordList->count());
+        $this->assertSame(7775, $wordList?->count());
         $this->assertNotContains('abacus', $wordList->all());
     }
 
@@ -210,6 +240,50 @@ class LaravelIntegrationTest extends TestCase
 
         $result = Passphrase::generate();
         $this->assertMatchesRegularExpression('/\d/', $result, 'Expected passphrase to contain a digit');
+    }
+
+    public function test_non_integer_num_words_config_throws(): void
+    {
+        config(['passphrase.num_words' => 'three']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidNumWords());
+
+        $this->app?->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_string_word_separator_config_throws(): void
+    {
+        config(['passphrase.word_separator' => 42]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidWordSeparator());
+
+        $this->app?->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_capitalize_config_throws(): void
+    {
+        config(['passphrase.capitalize' => 'yes']);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidCapitalize());
+
+        $this->app?->make(PassphraseGenerator::class);
+    }
+
+    public function test_non_boolean_include_number_config_throws(): void
+    {
+        config(['passphrase.include_number' => 1]);
+
+        $this->refreshServiceProvider();
+
+        $this->expectExceptionObject(ConfigException::invalidIncludeNumber());
+
+        $this->app?->make(PassphraseGenerator::class);
     }
 
     public function test_target_entropy_bits_with_excluded_words_config(): void
